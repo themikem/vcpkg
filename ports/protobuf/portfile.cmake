@@ -31,7 +31,7 @@ vcpkg_apply_patches(
 vcpkg_extract_source_archive(${TOOL_ARCHIVE_FILE} ${TOOL_PATH})
 
 # Disable the protobuf compiler when targeting UWP
-if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL WindowsStore)
+if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL WindowsStore OR (CMAKE_HOST_WIN32 AND VCPKG_CMAKE_SYSTEM_NAME))
   set(protobuf_BUILD_COMPILER OFF)
 else()
   set(protobuf_BUILD_COMPILER ON)
