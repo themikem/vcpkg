@@ -1,6 +1,6 @@
 Source: opencv
 Version: 3.4.0-3
-Build-Depends: opengl, zlib, protobuf (windows)
+Build-Depends: opengl, zlib, protobuf (!uwp)
 Description: computer vision library
 Default-Features: jpeg, png, tiff, eigen
 

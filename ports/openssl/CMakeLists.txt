@@ -44,7 +44,6 @@ if(CMAKE_SYSROOT AND CMAKE_C_COMPILE_OPTIONS_SYSROOT)
 endif()
 
 file(TO_NATIVE_PATH ENV_PATH "${COMPILER_ROOT};$ENV{PATH}")
-set(ENV{PATH} "${ENV_PATH}")
 set(ENV{ANDROID_DEV} "${CMAKE_SYSROOT}/usr")
 set(ENV{CC} "${CMAKE_C_COMPILER}")
 
@@ -75,7 +74,7 @@ if(CMAKE_HOST_WIN32)
     set(PATH_VAR ";%PATH%")
 else()
     set(ENV_COMMAND export)
-    set(PATH_VAR ":\\\$PATH")
+    set(PATH_VAR ":$ENV{PATH}")
 endif()
 
 add_custom_command(
@@ -109,6 +108,7 @@ add_custom_command(
 add_custom_target(depend
     COMMAND ${ENV_COMMAND} "PATH=${MSYS_BIN_DIR}${PATH_VAR}"
     COMMAND "${MAKE}" links # depend MAKEDEPPROG=${CMAKE_C_COMPILER}
+    VERBATIM
     WORKING_DIRECTORY "${BUILDDIR}"
     DEPENDS "${BUILDDIR}/Makefile"
 )
@@ -116,6 +116,7 @@ add_custom_target(build_libs ALL
     COMMAND ${ENV_COMMAND} "PATH=${MSYS_BIN_DIR}${PATH_VAR}"
     COMMAND "${CMAKE_COMMAND}" -E touch "${BUILDDIR}/krb5.h"
     COMMAND "${MAKE}" build_libs
+    VERBATIM
     WORKING_DIRECTORY "${BUILDDIR}"
     DEPENDS depend
     BYPRODUCTS "${BUILDDIR}/libssl.a" "${BUILDDIR}/libcrypto.a"

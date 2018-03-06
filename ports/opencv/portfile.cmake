@@ -210,8 +210,20 @@ if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
   set(BUILD_opencv_saliency OFF)
   set(BUILD_opencv_bgsegm OFF)
 endif()
+set(BUILD_opencv_dnn ON)
+if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android" OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+  set(BUILD_opencv_dnn OFF)
+endif()
 
 string(REPLACE ";" "\\\\\;" CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
+
+set(PROTOC_EXECUTABLE_OPTION)
+if(CMAKE_HOST_WIN32 AND VCPKG_CMAKE_SYSTEM_NAME AND NOT VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+  if(NOT EXISTS "${CURRENT_INSTALLED_DIR}/../x86-windows/tools/protoc.exe")
+    message(FATAL_ERROR "Cross compiling OpenCV requires the protoc executable. Please install protobuf:x86-windows to build the native form of the compiler.")
+  endif()
+  set(PROTOC_EXECUTABLE_OPTION "-DProtobuf_PROTOC_EXECUTABLE=${CURRENT_INSTALLED_DIR}/../x86-windows/tools/protoc.exe")
+endif()
 
 vcpkg_configure_cmake(
     PREFER_NINJA
@@ -225,6 +237,8 @@ vcpkg_configure_cmake(
         -DBUILD_DOCS=OFF
         -DBUILD_EXAMPLES=OFF
         -DBUILD_JASPER=OFF
+        -DBUILD_ANDROID_EXAMPLES=OFF
+        -DINSTALL_PYTHON_EXAMPLES=OFF
         -DBUILD_JPEG=OFF
         -DBUILD_OPENEXR=OFF
         -DBUILD_PACKAGE=OFF
@@ -238,7 +252,7 @@ vcpkg_configure_cmake(
         -DBUILD_WITH_STATIC_CRT=${BUILD_WITH_STATIC_CRT}
         -DBUILD_ZLIB=OFF
         -DBUILD_opencv_apps=OFF
-        -DBUILD_opencv_dnn=ON
+        -DBUILD_opencv_dnn=${BUILD_opencv_dnn}
         -DBUILD_opencv_flann=ON
         -DBUILD_opencv_python2=OFF
         -DBUILD_opencv_python3=OFF
@@ -280,6 +294,7 @@ vcpkg_configure_cmake(
         -DWITH_PNG=${WITH_PNG}
         -DWITH_JASPER=${WITH_JASPER}
         -DWITH_EIGEN=${WITH_EIGEN}
+        ${PROTOC_EXECUTABLE_OPTION}
     OPTIONS_DEBUG
         -DINSTALL_HEADERS=OFF
         -DINSTALL_OTHER=OFF
@@ -292,39 +307,46 @@ file(RENAME ${CURRENT_PACKAGES_DIR}/share/opencv/LICENSE ${CURRENT_PACKAGES_DIR}
 file(REMOVE ${CURRENT_PACKAGES_DIR}/LICENSE)
 file(REMOVE ${CURRENT_PACKAGES_DIR}/debug/LICENSE)
 
-if(VCPKG_PLATFORM_TOOLSET STREQUAL "v141")
-  set(OpenCV_RUNTIME vc15)
-else()
-  set(OpenCV_RUNTIME vc14)
-endif()
-if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
-  set(OpenCV_ARCH x64)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
-  set(OpenCV_ARCH ARM)
-elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
-  set(OpenCV_ARCH ARM64)
-else()
-  set(OpenCV_ARCH x86)
-endif()
+if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+  if(VCPKG_PLATFORM_TOOLSET STREQUAL "v141")
+    set(OpenCV_RUNTIME vc15)
+  else()
+    set(OpenCV_RUNTIME vc14)
+  endif()
+  if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(OpenCV_ARCH x64)
+  elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm")
+    set(OpenCV_ARCH ARM)
+  elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(OpenCV_ARCH ARM64)
+  else()
+    set(OpenCV_ARCH x86)
+  endif()
 
-file(GLOB BIN_AND_LIB ${CURRENT_PACKAGES_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/*)
-file(COPY ${BIN_AND_LIB} DESTINATION ${CURRENT_PACKAGES_DIR})
-file(GLOB DEBUG_BIN_AND_LIB ${CURRENT_PACKAGES_DIR}/debug/${OpenCV_ARCH}/${OpenCV_RUNTIME}/*)
-file(COPY ${DEBUG_BIN_AND_LIB} DESTINATION ${CURRENT_PACKAGES_DIR}/debug)
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/${OpenCV_ARCH})
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/${OpenCV_ARCH})
+  file(GLOB BIN_AND_LIB ${CURRENT_PACKAGES_DIR}/${OpenCV_ARCH}/${OpenCV_RUNTIME}/*)
+  file(COPY ${BIN_AND_LIB} DESTINATION ${CURRENT_PACKAGES_DIR})
+  file(GLOB DEBUG_BIN_AND_LIB ${CURRENT_PACKAGES_DIR}/debug/${OpenCV_ARCH}/${OpenCV_RUNTIME}/*)
+  file(COPY ${DEBUG_BIN_AND_LIB} DESTINATION ${CURRENT_PACKAGES_DIR}/debug)
+  file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/${OpenCV_ARCH})
+  file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/${OpenCV_ARCH})
 
-file(GLOB STATICLIB ${CURRENT_PACKAGES_DIR}/staticlib/*)
-if(STATICLIB)
-  file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/lib)
-  file(COPY ${STATICLIB} DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
-  file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/staticlib)
-endif()
-file(GLOB STATICLIB ${CURRENT_PACKAGES_DIR}/debug/staticlib/*)
-if(STATICLIB)
-  file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/lib)
-  file(COPY ${STATICLIB} DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
-  file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/staticlib)
+  file(GLOB STATICLIB ${CURRENT_PACKAGES_DIR}/staticlib/*)
+  if(STATICLIB)
+    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/lib)
+    file(COPY ${STATICLIB} DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
+    file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/staticlib)
+  endif()
+  file(GLOB STATICLIB ${CURRENT_PACKAGES_DIR}/debug/staticlib/*)
+  if(STATICLIB)
+    file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(COPY ${STATICLIB} DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
+    file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/staticlib)
+  endif()
+elseif(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
+  set(ABI_TAG abi-x86_64)
+  file(RENAME ${CURRENT_PACKAGES_DIR}/sdk/native/libs/x86_64 ${CURRENT_PACKAGES_DIR}/lib)
+  file(RENAME ${CURRENT_PACKAGES_DIR}/debug/sdk/native/libs/x86_64 ${CURRENT_PACKAGES_DIR}/debug/lib)
+  file(RENAME ${CURRENT_PACKAGES_DIR}/sdk/native/jni/include ${CURRENT_PACKAGES_DIR}/include)
 endif()
 
 file(READ ${CURRENT_PACKAGES_DIR}/share/opencv/OpenCVConfig.cmake OPENCV_CONFIG)
@@ -348,8 +370,18 @@ file(WRITE ${CURRENT_PACKAGES_DIR}/share/opencv/OpenCVModules-debug.cmake "${OPE
 
 file(RENAME ${CURRENT_PACKAGES_DIR}/debug/share/opencv/OpenCVModules.cmake ${CURRENT_PACKAGES_DIR}/share/opencv/OpenCVModules.cmake)
 
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
-file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
+file(REMOVE_RECURSE
+  ${CURRENT_PACKAGES_DIR}/debug/share
+  ${CURRENT_PACKAGES_DIR}/debug/include
+  ${CURRENT_PACKAGES_DIR}/debug/sdk
+  ${CURRENT_PACKAGES_DIR}/debug/apk
+  ${CURRENT_PACKAGES_DIR}/sdk
+  ${CURRENT_PACKAGES_DIR}/apk
+  ${CURRENT_PACKAGES_DIR}/README.android
+  ${CURRENT_PACKAGES_DIR}/debug/README.android
+)
+
+file(WRITE "${CURRENT_PACKAGES_DIR}/share/opencv/usage" "")
 
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/usage DESTINATION ${CURRENT_PACKAGES_DIR}/share/opencv)
 

@@ -68,6 +68,21 @@ endif()
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/user-config.jam ${CMAKE_CURRENT_BINARY_DIR}/user-config.jam @ONLY)
 
+set(NUMBER_OF_PROCESSORS 1)
+if(DEFINED ENV{NUMBER_OF_PROCESSORS})
+    set(NUMBER_OF_PROCESSORS $ENV{NUMBER_OF_PROCESSORS})
+elseif(CMAKE_HOST_LINUX)
+    execute_process(
+        COMMAND nproc
+        OUTPUT_VARIABLE NUMBER_OF_PROCESSORS
+    )
+    string(REPLACE "\n" "" NUMBER_OF_PROCESSORS "${NUMBER_OF_PROCESSORS}")
+    string(REPLACE " " "" NUMBER_OF_PROCESSORS "${NUMBER_OF_PROCESSORS}")
+endif()
+if(NOT NUMBER_OF_PROCESSORS)
+    set(NUMBER_OF_PROCESSORS 1)
+endif()
+
 add_custom_target(boost ALL
     COMMAND "${B2_EXE}"
         --user-config=${CMAKE_CURRENT_BINARY_DIR}/user-config.jam
@@ -85,7 +100,7 @@ add_custom_target(boost ALL
         -sZLIB_INCLUDE="${ZLIB_INCLUDE}"
         -sBZIP2_INCLUDE="${BZIP2_INCLUDE}"
         -sICU_PATH="${ICU_PATH}"
-        -j$ENV{NUMBER_OF_PROCESSORS}
+        -j${NUMBER_OF_PROCESSORS}
         -sBOOST_ROOT=${BOOST_BUILD_PATH}
         -sBOOST_BUILD_PATH=${BOOST_BUILD_PATH}
         --debug-configuration
