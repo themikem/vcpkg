@@ -49,3 +49,8 @@ file(INSTALL
 )
 
 vcpkg_copy_pdbs()
+
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static" AND NOT VCPKG_CMAKE_SYSTEM_NAME)
+    # Add liblzma to be linked when built statically
+    file(COPY ${CMAKE_CURRENT_LIST_DIR}/vcpkg-cmake-wrapper.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/tiff)
+endif()
