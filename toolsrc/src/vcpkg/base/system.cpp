@@ -303,6 +303,8 @@ namespace vcpkg::System
         // Flush stdout before launching external process
         fflush(stdout);
 
+        auto timer = Chrono::ElapsedTimer::create_started();
+
 #if defined(_WIN32)
         const auto actual_cmd_line = Strings::format(R"###("%s 2>&1")###", cmd_line);
 
@@ -324,8 +326,10 @@ namespace vcpkg::System
         }
 
         const auto ec = _pclose(pipe);
-        Debug::println("_pclose() returned %d", ec);
         remove_byte_order_marks(&output);
+
+        Debug::println("_pclose() returned %d after %8d us", ec, (int)timer.microseconds());
+
         return {ec, Strings::to_utf8(output)};
 #else
         const auto actual_cmd_line = Strings::format(R"###(%s 2>&1)###", cmd_line);
@@ -348,7 +352,9 @@ namespace vcpkg::System
         }
 
         const auto ec = pclose(pipe);
-        Debug::println("pclose() returned %d", ec);
+
+        Debug::println("_pclose() returned %d after %8d us", ec, (int)timer.microseconds());
+
         return {ec, output};
 #endif
     }

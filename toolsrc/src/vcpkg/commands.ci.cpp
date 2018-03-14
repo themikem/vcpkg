@@ -7,6 +7,7 @@
 #include <vcpkg/build.h>
 #include <vcpkg/commands.h>
 #include <vcpkg/dependencies.h>
+#include <vcpkg/globalstate.h>
 #include <vcpkg/help.h>
 #include <vcpkg/input.h>
 #include <vcpkg/install.h>
@@ -46,6 +47,11 @@ namespace vcpkg::Commands::CI
 
     void perform_and_exit(const VcpkgCmdArguments& args, const VcpkgPaths& paths, const Triplet& default_triplet)
     {
+        Checks::check_exit(
+            VCPKG_LINE_INFO, GlobalState::g_binary_caching, "The ci command requires binary caching to be enabled.");
+
+        auto& fs = paths.get_filesystem();
+
         const ParsedArguments options = args.parse_arguments(COMMAND_STRUCTURE);
 
         std::set<std::string> exclusions_set;
@@ -77,16 +83,112 @@ namespace vcpkg::Commands::CI
                                                                  Build::CleanBuildtrees::YES,
                                                                  Build::CleanPackages::YES};
 
+        std::map<PackageSpec, std::string> abi_tag_map;
+        std::set<PackageSpec> already_passed_or_failed;
+        std::set<PackageSpec> will_fail;
+
         std::vector<std::string> ports = Install::get_all_port_names(paths);
         std::vector<TripletAndSummary> results;
         for (const Triplet& triplet : triplets)
         {
             Input::check_triplet(triplet, paths);
+
+            auto pre_build_info = Build::PreBuildInfo::from_triplet_file(paths, triplet);
+
             std::vector<PackageSpec> specs = PackageSpec::to_package_specs(ports, triplet);
             // Install the default features for every package
-            const auto featurespecs = Util::fmap(specs, [](auto& spec) { return FeatureSpec(spec, ""); });
+            auto featurespecs = Util::fmap(specs, [](auto& spec) { return FeatureSpec(spec, ""); });
 
             auto action_plan = Dependencies::create_feature_install_plan(paths_port_file, featurespecs, status_db);
+
+            // The set of packages that will participate in the "true" action plan
+            std::vector<PackageSpec> final_specs;
+            for (auto&& action : action_plan)
+            {
+                if (auto p = action.install_action.get())
+                {
+                    // determine abi tag
+                    std::string abi;
+                    if (auto scf = p->source_control_file.get())
+                    {
+                        const Build::BuildPackageConfig build_config{
+                            p->source_control_file.value_or_exit(VCPKG_LINE_INFO),
+                            p->spec.triplet(),
+                            paths.port_dir(p->spec),
+                            install_plan_options,
+                            p->feature_list};
+
+                        auto dependency_abis =
+                            Util::fmap(p->computed_dependencies, [&](const PackageSpec& spec) -> Build::AbiEntry {
+                                auto it = abi_tag_map.find(spec);
+
+                                if (it == abi_tag_map.end())
+                                    return {spec.name(), ""};
+                                else
+                                    return {spec.name(), it->second};
+                            });
+
+                        auto maybe_tag_and_file =
+                            Build::compute_abi_tag(paths, build_config, pre_build_info, dependency_abis);
+                        if (auto tag_and_file = maybe_tag_and_file.get())
+                        {
+                            abi = tag_and_file->tag;
+                            abi_tag_map.emplace(p->spec, abi);
+                        }
+                    }
+                    else if (auto ipv = p->installed_package.get())
+                    {
+                        abi = ipv->core->package.abi;
+                        if (!abi.empty()) abi_tag_map.emplace(p->spec, abi);
+                    }
+
+                    std::string state;
+
+                    auto archives_root_dir = paths.root / "archives";
+                    auto archive_name = abi + ".zip";
+                    auto archive_subpath = fs::u8path(abi.substr(0, 2)) / archive_name;
+                    auto archive_path = archives_root_dir / archive_subpath;
+                    auto archive_tombstone_path = archives_root_dir / "fail" / archive_subpath;
+
+                    bool b_will_fail = false;
+
+                    if (fs.exists(archive_path))
+                    {
+                        state += "pass";
+                        already_passed_or_failed.emplace(p->spec);
+                    }
+                    else if (fs.exists(archive_tombstone_path))
+                    {
+                        state += "fail";
+                        already_passed_or_failed.emplace(p->spec);
+                        will_fail.emplace(p->spec);
+                        b_will_fail = true;
+                    }
+                    else if (std::any_of(
+                                 p->computed_dependencies.begin(),
+                                 p->computed_dependencies.end(),
+                                 [&](const PackageSpec& spec) { return Util::Sets::contains(will_fail, spec); }))
+                    {
+                        will_fail.emplace(p->spec);
+                        b_will_fail = true;
+                    }
+                    else
+                    {
+                        final_specs.push_back(p->spec);
+                    }
+
+                    System::println("%40s: %1s %8s: %s", p->spec, (b_will_fail ? " " : "*"), state, abi);
+                }
+            }
+
+            // Second round: only CI packages with unknown status
+            Util::unstable_keep_if(specs, [&](const PackageSpec& spec) {
+                return !Util::Sets::contains(already_passed_or_failed, spec) && !Util::Sets::contains(will_fail, spec);
+            });
+
+            featurespecs = Util::fmap(specs, [](auto& spec) { return FeatureSpec(spec, ""); });
+
+            action_plan = Dependencies::create_feature_install_plan(paths_port_file, featurespecs, status_db);
 
             for (auto&& action : action_plan)
             {
