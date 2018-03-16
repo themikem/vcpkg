@@ -44,4 +44,6 @@ if (CUDA_VERSION_MAJOR LESS 9)
                         "\n    https://developer.nvidia.com/cuda-downloads\n")
 endif()
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindCUDA.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
+
 SET(VCPKG_POLICY_EMPTY_PACKAGE enabled)
