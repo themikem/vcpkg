@@ -38,5 +38,5 @@ Feature: avresample
 Description: builds with libavresample enabled 
 
 Feature: staticlibs
-Build-Depends: avresample
+Build-Depends: ffmpeg[avresample]
 Description: build static libs in addition to DLLs (needed by OpenCV)
