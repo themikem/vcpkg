@@ -31,6 +31,15 @@
 #pragma comment(lib, "ole32")
 #pragma comment(lib, "shell32")
 
+#define STRINGIFY(...) #__VA_ARGS__
+#define MACRO_TO_STRING(X) STRINGIFY(X)
+
+#if defined(VCPKG_BASE_TRIPLET)
+#define BASE_TRIPLET VCPKG_BASE_TRIPLET
+#else
+#define BASE_TRIPLET X86_WINDOWS
+#endif
+
 using namespace vcpkg;
 
 void invalid_command(const std::string& cmd)
@@ -158,7 +167,7 @@ static void inner(const VcpkgCmdArguments& args)
         else
         {
 #if defined(_WIN32)
-            default_triplet = Triplet::X86_WINDOWS;
+            default_triplet = Triplet::BASE_TRIPLET;
 #elif defined(__APPLE__)
             default_triplet = Triplet::from_canonical_name("x64-osx");
 #elif defined(__FreeBSD__)
