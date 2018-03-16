@@ -1,11 +1,17 @@
 include(vcpkg_common_functions)
-set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/ffmpeg-3.3.3)
-vcpkg_download_distfile(ARCHIVE
-    URLS "http://ffmpeg.org/releases/ffmpeg-3.3.3.tar.bz2"
-    FILENAME "ffmpeg-3.3.3.tar.bz2"
-    SHA512  1cc63bf73356f4e618c0d3572a216bdf5689f10deff56b4262f6d740b0bee5a4b3eac234f45fca3d4d2da77903a507b4fba725b76d2d2070f31b6dae9e7a2dab
+
+set(FFMPEG_PORT_VERSION "3.4.2")
+
+set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/ffmpeg-${FFMPEG_PORT_VERSION})
+
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO FFmpeg/FFmpeg
+    REF n${FFMPEG_PORT_VERSION}
+    SHA512 68686b797d770f4550e1fa220332fac23aed5e6daa77c265b46206601335f530ad502706473e23ef203aeabfa2a79bee552b77f7929f43226c1dc55c47dac56b
+    HEAD_REF master
 )
-vcpkg_extract_source_archive(${ARCHIVE})
+
 vcpkg_apply_patches(
     SOURCE_PATH ${SOURCE_PATH}
     PATCHES
@@ -48,6 +54,36 @@ endif()
 
 if("avresample" IN_LIST FEATURES)
     set(OPTIONS "${OPTIONS} --enable-avresample")
+endif()
+
+if("nonfree" IN_LIST FEATURES)
+    set(OPTIONS "${OPTIONS} --enable-nonfree")
+endif()
+
+if("cuda" IN_LIST FEATURES)
+    find_program(NVCC
+        NAMES nvcc nvcc.exe
+        PATHS
+        ENV CUDA_PATH
+        ENV CUDA_BIN_PATH
+        PATH_SUFFIXES bin bin64
+        DOC "Toolkit location."
+        NO_DEFAULT_PATH
+    )
+    
+    if(NVCC)
+        set(CUDA_FOUND TRUE)
+        set(CUDA_TOOLKIT_ROOT_DIR $ENV{CUDA_PATH})
+        message(STATUS "PATH - ${CUDA_TOOLKIT_ROOT_DIR} / NVCC - ${NVCC}")
+        # list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+        # find_package(CUDA REQUIRED)
+        set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/include;${CUDA_TOOLKIT_ROOT_DIR}/include;$ENV{INCLUDE}")
+        set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/lib;${CUDA_TOOLKIT_ROOT_DIR}/lib/x64;$ENV{LIB}")
+    endif()
+
+    if(CUDA_FOUND)
+        set(OPTIONS "${OPTIONS} --enable-cuda --enable-cuvid --enable-nvenc --enable-libnpp")
+    endif()
 endif()
 
 if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
