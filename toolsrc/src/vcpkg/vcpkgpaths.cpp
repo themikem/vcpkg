@@ -9,6 +9,15 @@
 #include <vcpkg/packagespec.h>
 #include <vcpkg/vcpkgpaths.h>
 
+#define STRINGIFY(...) #__VA_ARGS__
+#define MACRO_TO_STRING(X) STRINGIFY(X)
+
+#if defined(VCPKG_v141_TOOLSET_VERSION)
+#define VCPKG_v141_TOOLSET_VERSION_STRING MACRO_TO_STRING(-vcvars_ver=VCPKG_v141_TOOLSET_VERSION)
+#else
+#define VCPKG_v141_TOOLSET_VERSION_STRING 
+#endif
+
 namespace vcpkg
 {
     static constexpr CStringView V_120 = "v120";
@@ -516,7 +525,7 @@ namespace vcpkg
                     if (fs.exists(dumpbin_path))
                     {
                         const Toolset v141toolset = Toolset{
-                            vs_instance.root_path, dumpbin_path, vcvarsall_bat, {}, V_141, supported_architectures};
+                            vs_instance.root_path, dumpbin_path, vcvarsall_bat,{ VCPKG_v141_TOOLSET_VERSION_STRING }, V_141, supported_architectures };
 
                         auto english_language_pack = dumpbin_path.parent_path() / "1033";
 
