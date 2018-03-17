@@ -37,7 +37,7 @@ set(_csc_PROJECT_PATH ffmpeg)
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
-set(OPTIONS "--enable-asm --enable-yasm --disable-doc --disable-ffmpeg --target-os=win32")
+set(OPTIONS "--enable-asm --enable-yasm --disable-doc --target-os=win32")
 set(OPTIONS "${OPTIONS} --enable-runtime-cpudetect")
 
 message(STATUS "VCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}")
@@ -63,6 +63,12 @@ if("openssl" IN_LIST FEATURES)
     set(OPTIONS "${OPTIONS} --enable-openssl")
 else()
     set(OPTIONS "${OPTIONS} --disable-openssl")
+endif()
+
+if("ffmpeg-exe" IN_LIST FEATURES)
+    set(OPTIONS "${OPTIONS} --enable-ffmpeg")
+else()
+    set(OPTIONS "${OPTIONS} --disable-ffmpeg")
 endif()
 
 if("ffplay" IN_LIST FEATURES)
@@ -120,6 +126,12 @@ if("cuda" IN_LIST FEATURES)
         message(STATUS "Found CUDA version ${CUDA_VERSION_STRING}")
         set(OPTIONS "${OPTIONS} --enable-cuda --enable-cuvid --enable-nvenc --enable-libnpp")
     endif()
+endif()
+
+if("programs" IN_LIST FEATURES)
+    # set(OPTIONS "${OPTIONS} --enable-programs")
+else()
+    set(OPTIONS "${OPTIONS} --disable-programs")
 endif()
 
 if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
