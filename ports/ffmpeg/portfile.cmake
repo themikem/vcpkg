@@ -79,7 +79,7 @@ if("cuda" IN_LIST FEATURES)
 endif()
 
 if("programs" IN_LIST FEATURES)
-    set(OPTIONS "${OPTIONS} --enable-programs")
+    # set(OPTIONS "${OPTIONS} --enable-programs")
 else()
     set(OPTIONS "${OPTIONS} --disable-programs")
 endif()
