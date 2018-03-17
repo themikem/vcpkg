@@ -17,6 +17,15 @@ Description: build static libs in addition to DLLs (needed by OpenCV)
 Feature: nonfree
 Description: enable nonfree option for build
 
+Feature: gpl
+Description: Build with GPL components enabled
+
+Feature: version3
+Description: Select LGPL / GPL version 3 license
+
+Feature: programs
+Description: Build command-line tools
+
 Feature: cuda
 Build-Depends: ffmpeg[nonfree], cuda
 Description: CUDA support for ffmpeg
