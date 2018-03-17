@@ -192,7 +192,7 @@ set(CUDA_GENERATED_OUTPUT_DIR "" CACHE PATH "Directory to put all the output fil
 option(CUDA_HOST_COMPILATION_CPP "Generated file extension" ON)
 
 # Extra user settable flags
-cmake_initialize_per_config_variable(CUDA_NVCC_FLAGS "Semi-colon delimit multiple arguments.")
+# cmake_initialize_per_config_variable(CUDA_NVCC_FLAGS "Semi-colon delimit multiple arguments.")
 
 if(CMAKE_GENERATOR MATCHES "Visual Studio")
   set(_CUDA_MSVC_HOST_COMPILER "$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)")
