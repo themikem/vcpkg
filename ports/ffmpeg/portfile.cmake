@@ -124,6 +124,9 @@ if("cuda" IN_LIST FEATURES)
 
     if(CUDA_FOUND)
         message(STATUS "Found CUDA version ${CUDA_VERSION_STRING}")
+
+        set(ENV{LIBPATH} "$ENV{LIBPATH};${CUDA_LIBRARIES};${CUDA_npp_LIBRARY};${CUDA_nvcuvenc_LIBRARY};${CUDA_nvcuvid_LIBRARY}")
+        set(ENV{INCLUDE} "$ENV{INCLUDE};${CUDA_INCLUDE_DIRS}")
         set(OPTIONS "${OPTIONS} --enable-cuda --enable-cuvid --enable-nvenc --enable-libnpp")
     endif()
 endif()
