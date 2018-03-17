@@ -12,12 +12,13 @@ diff --git a/configure b/configure
 index ba38a73906..0a3f308323 100755
 --- a/configure
 +++ b/configure
-@@ -5031,6 +5031,8 @@ case $target_os in
+@@ -5046,6 +5046,9 @@ disable static
          fi
          enabled x86_32 && check_ldflags -LARGEADDRESSAWARE
          shlibdir_default="$bindir_default"
 +        LIBPREF=""
 +        LIBSUF=".lib"
++        LD_LIB='%.lib'
          SLIBPREF=""
          SLIBSUF=".dll"
          SLIBNAME_WITH_VERSION='$(SLIBPREF)$(FULLNAME)-$(LIBVERSION)$(SLIBSUF)'
