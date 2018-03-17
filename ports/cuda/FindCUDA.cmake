@@ -73,6 +73,8 @@
 #                            Windows only.
 #
 set(CUDA_REQUIRED_VERSION "V9.0.0")
+set(CMAKE_FIND_LIBRARY_PREFIXES "")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
 
 
 # This macro helps us find the location of helper files we will need the full path to
