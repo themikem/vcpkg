@@ -36,7 +36,7 @@ set(_csc_PROJECT_PATH ffmpeg)
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
-set(OPTIONS "--enable-cross-compile --disable-programs --disable-doc --target-os=win32")
+set(OPTIONS "--enable-cross-compile --disable-doc --target-os=win32")
 # set(OPTIONS "${OPTIONS} --enable-runtime-cpudetect")
 
 message(STATUS "VCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}")
@@ -60,30 +60,26 @@ if("nonfree" IN_LIST FEATURES)
     set(OPTIONS "${OPTIONS} --enable-nonfree")
 endif()
 
+if("gpl" IN_LIST FEATURES)
+    set(OPTIONS "${OPTIONS} --enable-gpl")
+endif()
+
+if("version3" IN_LIST FEATURES)
+    set(OPTIONS "${OPTIONS} --enable-version3")
+endif()
+
 if("cuda" IN_LIST FEATURES)
-    find_program(NVCC
-        NAMES nvcc nvcc.exe
-        PATHS
-        ENV CUDA_PATH
-        ENV CUDA_BIN_PATH
-        PATH_SUFFIXES bin bin64
-        DOC "Toolkit location."
-        NO_DEFAULT_PATH
-    )
-    
-    if(NVCC)
-        set(CUDA_FOUND TRUE)
-        set(CUDA_TOOLKIT_ROOT_DIR $ENV{CUDA_PATH})
-        message(STATUS "PATH - ${CUDA_TOOLKIT_ROOT_DIR} / NVCC - ${NVCC}")
-        # list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
-        # find_package(CUDA REQUIRED)
-        set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/include;${CUDA_TOOLKIT_ROOT_DIR}/include;$ENV{INCLUDE}")
-        set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/lib;${CUDA_TOOLKIT_ROOT_DIR}/lib/x64;$ENV{LIB}")
-    endif()
+    find_package(CUDA)
 
     if(CUDA_FOUND)
         set(OPTIONS "${OPTIONS} --enable-cuda --enable-cuvid --enable-nvenc --enable-libnpp")
     endif()
+endif()
+
+if("programs" IN_LIST FEATURES)
+    set(OPTIONS "${OPTIONS} --enable-programs")
+else()
+    set(OPTIONS "${OPTIONS} --disable-programs")
 endif()
 
 if(VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
@@ -237,7 +233,16 @@ endforeach()
 
 file(GLOB EXP_FILES ${CURRENT_PACKAGES_DIR}/lib/*.exp ${CURRENT_PACKAGES_DIR}/debug/lib/*.exp)
 file(GLOB LIB_FILES ${CURRENT_PACKAGES_DIR}/bin/*.lib ${CURRENT_PACKAGES_DIR}/debug/bin/*.lib)
-file(GLOB EXE_FILES ${CURRENT_PACKAGES_DIR}/bin/*.exe ${CURRENT_PACKAGES_DIR}/debug/bin/*.exe)
+if("programs" IN_LIST FEATURES)
+    file(GLOB RELEASE_EXE_FILES ${CURRENT_PACKAGES_DIR}/bin/*.exe)
+    file(GLOB DEBUG_EXE_FILES ${CURRENT_PACKAGES_DIR}/debug/bin/*.exe)
+    file(COPY ${RELEASE_EXE_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/tools)
+    file(COPY ${DEBUG_EXE_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools)
+    set(${EXE_FILES} "")
+else()
+    file(GLOB EXE_FILES ${CURRENT_PACKAGES_DIR}/bin/*.exe ${CURRENT_PACKAGES_DIR}/debug/bin/*.exe)
+endif()
+
 set(FILES_TO_REMOVE ${EXP_FILES} ${LIB_FILES} ${DEF_FILES} ${EXE_FILES})
 list(LENGTH FILES_TO_REMOVE FILES_TO_REMOVE_LEN)
 if(FILES_TO_REMOVE_LEN GREATER 0)
@@ -248,9 +253,24 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include ${CURRENT_PACKAGES_DIR
 vcpkg_copy_pdbs()
 
 # Handle copyright
-# TODO: Examine build log and confirm that this license matches the build output
-file(COPY ${SOURCE_PATH}/COPYING.LGPLv2.1 DESTINATION ${CURRENT_PACKAGES_DIR}/share/ffmpeg)
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/ffmpeg/COPYING.LGPLv2.1 ${CURRENT_PACKAGES_DIR}/share/ffmpeg/copyright)
+file(COPY ${SOURCE_PATH}/LICENSE.md DESTINATION ${CURRENT_PACKAGES_DIR}/share/ffmpeg/license)
+if("gpl" IN_LIST FEATURES)
+    if("version3" IN_LIST FEATURES)
+        set(LICENSE_FILE ${SOURCE_PATH}/COPYING.GPLv3 )
+    else()
+        set(LICENSE_FILE ${SOURCE_PATH}/COPYING.GPLv2 )
+    endif()
+else()
+    if("version3" IN_LIST FEATURES)
+        set(LICENSE_FILE ${SOURCE_PATH}/COPYING.LGPLv3 )
+    else()
+        set(LICENSE_FILE ${SOURCE_PATH}/COPYING.LGPLv2.1 )
+    endif()
+endif()
+
+file(COPY ${LICENSE_FILE} DESTINATION ${CURRENT_PACKAGES_DIR}/share/ffmpeg)
+get_filename_component(LICENSE_FILE_NAME ${LICENSE_FILE} NAME)
+file(RENAME ${CURRENT_PACKAGES_DIR}/share/ffmpeg/${LICENSE_FILE_NAME} ${CURRENT_PACKAGES_DIR}/share/ffmpeg/copyright)
 
 # Used by OpenCV
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindFFMPEG.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/ffmpeg)
