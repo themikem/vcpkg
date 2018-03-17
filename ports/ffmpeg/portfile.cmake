@@ -69,9 +69,11 @@ if("version3" IN_LIST FEATURES)
 endif()
 
 if("cuda" IN_LIST FEATURES)
-    find_package(CUDA)
+    list(APPEND CMAKE_MODULE_PATH "${CURRENT_INSTALLED_DIR}/share/cuda")
+    find_package(CUDA REQUIRED)
 
     if(CUDA_FOUND)
+        message(STATUS "Found CUDA version ${CUDA_VERSION_STRING}")
         set(OPTIONS "${OPTIONS} --enable-cuda --enable-cuvid --enable-nvenc --enable-libnpp")
     endif()
 endif()
