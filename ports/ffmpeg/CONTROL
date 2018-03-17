@@ -1,6 +1,5 @@
 Source: ffmpeg
 Version: 3.4.2-1
-
 Description: a library to decode, encode, transcode, mux, demux, stream, filter and play pretty much anything that humans and machines have created.
   FFmpeg is the leading multimedia framework, able to decode, encode, transcode, mux, demux, stream, filter and play pretty much anything that humans and machines have created. It supports the most obscure ancient formats up to the cutting edge. No matter if they were designed by some standards committee, the community or a corporation. It is also highly portable: FFmpeg compiles, runs, and passes our testing infrastructure FATE across Linux, Mac OS X, Microsoft Windows, the BSDs, Solaris, etc. under a wide variety of build environments, machine architectures, and configurations.
 
@@ -12,6 +11,13 @@ Description: ffplay appplication support in ffmpeg
 
 Feature: ffprobe
 Description: ffprobe appplication support in ffmpeg
+
+Feature: ffmpeg-exe
+Description: ffmpeg appplication support in ffmpeg
+
+Feature: programs
+Build-Depends: ffmpeg[ffserver],ffmpeg[ffplay],ffmpeg[ffprobe],ffmpeg[ffmpeg-exe]
+Description: Build command-line tools
 
 Feature: openssl
 Build-Depends: openssl, ffmpeg[nonfree]
@@ -34,6 +40,9 @@ Description: allow nonfree and unredistributable libraries
 
 Feature: gpl
 Description: allow GPL licensed libraries
+
+Feature: version3
+Description: Select LGPL / GPL version 3 license
 
 Feature: avresample
 Description: builds with libavresample enabled 
