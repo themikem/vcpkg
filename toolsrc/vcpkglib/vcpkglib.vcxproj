@@ -75,7 +75,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=X64_WINDOWS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=$(VCPKG_BASE_TRIPLET);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=X64_WINDOWS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=$(VCPKG_BASE_TRIPLET);_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -105,7 +105,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);_MBCS;VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=X64_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);_MBCS;VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=$(VCPKG_BASE_TRIPLET);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -124,7 +124,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=X64_WINDOWS;_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DISABLE_METRICS=$(DISABLE_METRICS);VCPKG_VERSION=$(VCPKG_VERSION);VCPKG_v141_TOOLSET_VERSION=$(VCPKG_v141_TOOLSET_VERSION);VCPKG_BASE_TRIPLET=$(VCPKG_BASE_TRIPLET);_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>

@@ -50,7 +50,7 @@ $platformToolset = $msbuildExeWithPlatformToolset[1]
 $windowsSDK = & $scriptsDir\getWindowsSDK.ps1
 
 $toolsetVerArg = ""
-if ($toolsetVer)
+if ($toolsetVer -ne 0)
 {
 	$toolsetVerArg = "`"/p:VCPKG_v141_TOOLSET_VERSION=$toolsetVer`""
 }
