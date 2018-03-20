@@ -372,6 +372,7 @@ file(RENAME ${CURRENT_PACKAGES_DIR}/debug/share/opencv/OpenCVModules.cmake ${CUR
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/opencvdeploy.ps1 DESTINATION ${CURRENT_PACKAGES_DIR}/share/opencv)
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/usage DESTINATION ${CURRENT_PACKAGES_DIR}/share/opencv)
 
 vcpkg_copy_pdbs()

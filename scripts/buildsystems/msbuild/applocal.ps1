@@ -63,6 +63,7 @@ function resolve([string]$targetBinary) {
             deployBinary $baseTargetBinaryDir $installedDir "$_"
             if (Test-Path function:\deployPluginsIfQt) { deployPluginsIfQt $targetBinaryDir "$g_install_root\plugins" "$_" }
             if (Test-Path function:\deployOpenNI2) { deployOpenNI2 $targetBinaryDir "$g_install_root" "$_" }
+            if (Test-Path function:\deployOpenCV) { deployOpenCV $targetBinaryDir "$g_install_root" "$_" }
             resolve "$baseTargetBinaryDir\$_"
         } elseif (Test-Path "$targetBinaryDir\$_") {
             Write-Verbose "  ${_}: $_ not found in vcpkg; locally deployed"
@@ -83,6 +84,11 @@ if (Test-Path "$g_install_root\plugins\qtdeploy.ps1") {
 # Note: This is a hack to make OpenNI2 work.
 if (Test-Path "$g_install_root\bin\OpenNI2\openni2deploy.ps1") {
     . "$g_install_root\bin\OpenNI2\openni2deploy.ps1"
+}
+
+# Note: This is a hack to make OpenCV FFMPEG work.
+if (Test-Path "$g_install_root\share\opencv\opencvdeploy.ps1") {
+    . "$g_install_root\share\opencv\opencvdeploy.ps1"
 }
 
 resolve($targetBinary)
