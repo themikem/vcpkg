@@ -29,6 +29,7 @@ vcpkg_apply_patches(
     PATCHES "${CMAKE_CURRENT_LIST_DIR}/upgrade_projects.patch"
             "${CMAKE_CURRENT_LIST_DIR}/inherit_from_parent_or_project_defaults.patch"
             "${CMAKE_CURRENT_LIST_DIR}/replace_environment_variable.patch"
+            "${CMAKE_CURRENT_LIST_DIR}/ps1080ini_usb.patch"
 )
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET})
