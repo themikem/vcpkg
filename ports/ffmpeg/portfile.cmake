@@ -37,7 +37,7 @@ set(_csc_PROJECT_PATH ffmpeg)
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
-set(OPTIONS "--enable-asm --enable-yasm --disable-doc --target-os=win32")
+set(OPTIONS "--enable-asm --enable-yasm --disable-doc --target-os=win32 --enable-w32threads")
 set(OPTIONS "${OPTIONS} --enable-runtime-cpudetect")
 
 message(STATUS "VCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}")
@@ -65,26 +65,30 @@ else()
     set(OPTIONS "${OPTIONS} --disable-openssl")
 endif()
 
-if("ffmpeg-exe" IN_LIST FEATURES)
+if("ffmpeg-exe" IN_LIST FEATURES AND NOT "programs" IN_LIST FEATURES)
     set(OPTIONS "${OPTIONS} --enable-ffmpeg")
+elseif("programs" IN_LIST FEATURES)
 else()
     set(OPTIONS "${OPTIONS} --disable-ffmpeg")
 endif()
 
-if("ffplay" IN_LIST FEATURES)
+if("ffplay" IN_LIST FEATURES AND NOT "programs" IN_LIST FEATURES))
     set(OPTIONS "${OPTIONS} --enable-ffplay")
+elseif("programs" IN_LIST FEATURES)
 else()
     set(OPTIONS "${OPTIONS} --disable-ffplay")
 endif()
 
-if("ffserver" IN_LIST FEATURES)
+if("ffserver" IN_LIST FEATURES AND NOT "programs" IN_LIST FEATURES))
     set(OPTIONS "${OPTIONS} --enable-ffserver")
+elseif("programs" IN_LIST FEATURES)
 else()
     set(OPTIONS "${OPTIONS} --disable-ffserver")
 endif()
 
-if("ffprobe" IN_LIST FEATURES)
+if("ffprobe" IN_LIST FEATURES AND NOT "programs" IN_LIST FEATURES))
     set(OPTIONS "${OPTIONS} --enable-ffprobe")
+elseif("programs" IN_LIST FEATURES)
 else()
     set(OPTIONS "${OPTIONS} --disable-ffprobe")
 endif()
@@ -170,7 +174,7 @@ endif()
 set(OPTIONS_DEBUG "--enable-debug") # Note: --disable-optimizations can't be used due to http://ffmpeg.org/pipermail/libav-user/2013-March/003945.html
 set(OPTIONS_RELEASE "")
 
-set(OPTIONS "${OPTIONS} --extra-cflags=-DHAVE_UNISTD_H=0 --enable-w32threads")
+set(OPTIONS "${OPTIONS} --extra-cflags=-DHAVE_UNISTD_H=0")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     if("staticlibs" IN_LIST FEATURES)
