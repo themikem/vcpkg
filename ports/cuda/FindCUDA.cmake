@@ -558,17 +558,14 @@ else()
     list(APPEND CUDA_LIBRARIES ${CUDA_CUDART_LIBRARY})
 endif()
 
+get_filename_component(LIB_PATH ${CUDA_CUDART_LIBRARY} DIRECTORY)
+set(CUDA_LIBRARY_DIRS ${LIB_PATH})
 
-
-  get_filename_component(LIB_PATH ${CUDA_CUDART_LIBRARY} DIRECTORY)
-  set(CUDA_LIBRARY_DIRS ${LIB_PATH})
-  message(STATUS "Lib path: ${LIB_PATH}")
-
-  mark_as_advanced(
-    CUDA_CUDA_LIBRARY
-    CUDA_CUDART_LIBRARY
-    CUDA_LIBRARY_DIRS
-    )
+mark_as_advanced(
+  CUDA_CUDA_LIBRARY
+  CUDA_CUDART_LIBRARY
+  CUDA_LIBRARY_DIRS
+  )
 
 # == FIND_CUDA_HELPER_LIBS =====================================================
 macro(FIND_CUDA_HELPER_LIBS _name)
