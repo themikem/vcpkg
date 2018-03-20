@@ -217,6 +217,9 @@ file(
         ${CURRENT_PACKAGES_DIR}/tools/openni2
 )
 
+# Copy FindOpenNI2.cmake to shared folder
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindOpenNI2.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/openni2)
+
 # Deploy Script
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/openni2deploy.ps1 DESTINATION ${CURRENT_PACKAGES_DIR}/bin/OpenNI2)
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/openni2deploy.ps1 DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin/OpenNI2)
