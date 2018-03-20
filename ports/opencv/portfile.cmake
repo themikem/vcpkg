@@ -290,6 +290,9 @@ vcpkg_configure_cmake(
         # WITH
         -DWITH_CUBLAS=OFF
         -DWITH_CUDA=${WITH_CUDA}
+        -DWITH_CUFFT=${WITH_CUDA}
+        -DWITH_CUBLAS=${WITH_CUDA}
+        -DWITH_NVCUVID=${WITH_CUDA}
         -DWITH_EIGEN=${WITH_EIGEN}
         -DWITH_FFMPEG=${WITH_FFMPEG}
         -DWITH_GDCM=${WITH_GDCM}
