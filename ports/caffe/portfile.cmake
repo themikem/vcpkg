@@ -12,10 +12,19 @@ vcpkg_from_github(
     HEAD_REF windows
 )
 
+vcpkg_apply_patches(
+    SOURCE_PATH ${SOURCE_PATH}
+    PATCHES
+      "${CMAKE_CURRENT_LIST_DIR}/0001-protobuf-cmake-use-vcpkg.patch"
+)
+
+#core Build-Depends
+list(INSERT CMAKE_MODULE_PATH 0 ${CURRENT_INSTALLED_DIR}/share/protobuf)
+
 if("cuda" IN_LIST FEATURES)
     set(CPU_ONLY OFF)
-    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/cuda)
-    find_package(cuda REQUIRED)
+    list(INSERT CMAKE_MODULE_PATH 0 ${CURRENT_INSTALLED_DIR}/share/cuda)
+    # find_package(cuda REQUIRED)
 else()
     set(CPU_ONLY ON)
 endif()
@@ -28,7 +37,8 @@ endif()
 
 if("opencv" IN_LIST FEATURES)
     set(USE_OPENCV ON)
-    find_package(opencv REQUIRED)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/opencv)
+    # find_package(OpenCV REQUIRED)
 else()
     set(USE_OPENCV OFF)
 endif()
@@ -49,6 +59,7 @@ vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
     OPTIONS
+    "-DCURRENT_INSTALLED_DIR=${CURRENT_INSTALLED_DIR}"
     -DCOPY_PREREQUISITES=OFF
     -DINSTALL_PREREQUISITES=OFF
     # Set to ON to use python
@@ -70,10 +81,11 @@ vcpkg_install_cmake()
 
 # Move bin to tools
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(GLOB BINARIES ${CURRENT_PACKAGES_DIR}/bin/*.exe)
 foreach(binary ${BINARIES})
     get_filename_component(binary_name ${binary} NAME)
-    file(RENAME ${binary} ${CURRENT_PACKAGES_DIR}/tools/caffe/${binary_name})
+    file(RENAME ${binary} ${CURRENT_PACKAGES_DIR}/tools/${binary_name})
 endforeach()
 
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/python)
@@ -82,7 +94,10 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/python)
 
 file(GLOB DEBUG_BINARIES ${CURRENT_PACKAGES_DIR}/debug/bin/*.exe)
-file(REMOVE ${DEBUG_BINARIES})
+foreach(binary ${DEBUG_BINARIES})
+    get_filename_component(binary_name ${binary} NAME)
+    file(RENAME ${binary} ${CURRENT_PACKAGES_DIR}/debug/tools/${binary_name})
+endforeach()
 
 file(READ ${CURRENT_PACKAGES_DIR}/debug/share/caffe/CaffeTargets-debug.cmake CAFFE_DEBUG_MODULE)
 string(REPLACE "\${_IMPORT_PREFIX}" "\${_IMPORT_PREFIX}/debug" CAFFE_DEBUG_MODULE "${CAFFE_DEBUG_MODULE}")
