@@ -1,0 +1,14 @@
+diff --git a/cmake/protobuf-options.cmake b/cmake/protobuf-options.cmake
+index 47fb158..762641d 100644
+--- a/cmake/protobuf-options.cmake
++++ b/cmake/protobuf-options.cmake
+@@ -3,5 +3,7 @@ option(protobuf_VERBOSE "Enable for verbose output" OFF)
+ mark_as_advanced(protobuf_VERBOSE)
+ 
+ # FindProtobuf module compatibel
+-option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)
+-mark_as_advanced(protobuf_MODULE_COMPATIBLE)
++if(NOT protobuf_MODULE_COMPATIBLE)
++    option(protobuf_MODULE_COMPATIBLE "CMake build-in FindProtobuf.cmake module compatible" OFF)
++    mark_as_advanced(protobuf_MODULE_COMPATIBLE)
++endif()
