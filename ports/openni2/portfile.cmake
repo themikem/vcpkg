@@ -29,6 +29,7 @@ vcpkg_apply_patches(
     PATCHES "${CMAKE_CURRENT_LIST_DIR}/upgrade_projects.patch"
             "${CMAKE_CURRENT_LIST_DIR}/inherit_from_parent_or_project_defaults.patch"
             "${CMAKE_CURRENT_LIST_DIR}/replace_environment_variable.patch"
+            "${CMAKE_CURRENT_LIST_DIR}/ps1080ini_usb.patch"
 )
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET})
@@ -216,6 +217,9 @@ file(
     DESTINATION
         ${CURRENT_PACKAGES_DIR}/tools/openni2
 )
+
+# Copy FindOpenNI2.cmake to shared folder
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindOpenNI2.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/openni2)
 
 # Deploy Script
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/openni2deploy.ps1 DESTINATION ${CURRENT_PACKAGES_DIR}/bin/OpenNI2)

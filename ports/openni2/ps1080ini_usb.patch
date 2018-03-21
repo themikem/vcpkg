@@ -1,0 +1,13 @@
+diff --git a/Config/OpenNI2/Drivers/PS1080.ini b/Config/OpenNI2/Drivers/PS1080.ini
+index c7c2348..188d8b9 100644
+--- a/Config/OpenNI2/Drivers/PS1080.ini
++++ b/Config/OpenNI2/Drivers/PS1080.ini
+@@ -25,7 +25,7 @@
+ ;APCEnabled=1
+ 
+ ; USB interface to be used. 0 - FW Default, 1 - ISO endpoints (default on Windows), 2 - BULK endpoints (default on Linux/Mac/Android machines), 3 - ISO endpoints for low-bandwidth depth
+-;UsbInterface=2
++UsbInterface=0
+ 
+ [Depth]
+ ; Output format. 100 - 1mm depth values (default), 102 - u9.2 Shift values.

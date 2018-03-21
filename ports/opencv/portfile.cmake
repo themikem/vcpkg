@@ -213,6 +213,12 @@ if("eigen" IN_LIST FEATURES)
   set(WITH_EIGEN ON)
 endif()
 
+set(WITH_OPENNI2 OFF)
+if("openni2" IN_LIST FEATURES)
+  set(WITH_OPENNI2 ON)
+  list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/openni2)
+endif()
+
 if(BUILD_opencv_contrib)
   vcpkg_from_github(
       OUT_SOURCE_PATH CONTRIB_SOURCE_PATH
@@ -241,6 +247,7 @@ vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     OPTIONS
         # Ungrouped Entries
+        "-DCURRENT_INSTALLED_DIR=${CURRENT_INSTALLED_DIR}"
         -DOpenCV_DISABLE_ARCH_PATH=ON
         # Do not build docs/examples
         -DBUILD_DOCS=OFF
@@ -310,6 +317,7 @@ vcpkg_configure_cmake(
         -DWITH_VTK=${WITH_VTK}
         -DWITH_WEBP=${WITH_WEBP}
         -DWITH_ZLIB=${WITH_ZLIB}
+        -DWITH_OPENNI2=${WITH_OPENNI2}
     OPTIONS_DEBUG
         -DINSTALL_HEADERS=OFF
         -DINSTALL_OTHER=OFF
