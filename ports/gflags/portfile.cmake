@@ -38,6 +38,8 @@ endif()
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindGflags.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/gflags)
+
 file(INSTALL ${SOURCE_PATH}/COPYING.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/gflags RENAME copyright)
 
 vcpkg_copy_pdbs()
