@@ -29,6 +29,8 @@ file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 
 vcpkg_copy_pdbs()
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindGlog.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/glog)
+
 # Handle copyright
 file(COPY ${SOURCE_PATH}/COPYING DESTINATION ${CURRENT_PACKAGES_DIR}/share/glog)
 file(RENAME ${CURRENT_PACKAGES_DIR}/share/glog/COPYING ${CURRENT_PACKAGES_DIR}/share/glog/copyright)
