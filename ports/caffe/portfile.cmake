@@ -80,6 +80,8 @@ vcpkg_configure_cmake(
 vcpkg_install_cmake()
 
 # Move bin to tools
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/caffe)
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/share/caffe)
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools)
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/debug/tools)
 file(GLOB BINARIES ${CURRENT_PACKAGES_DIR}/bin/*.exe)
@@ -99,9 +101,9 @@ foreach(binary ${DEBUG_BINARIES})
     file(RENAME ${binary} ${CURRENT_PACKAGES_DIR}/debug/tools/${binary_name})
 endforeach()
 
-file(READ ${CURRENT_PACKAGES_DIR}/debug/share/caffe/CaffeTargets-debug.cmake CAFFE_DEBUG_MODULE)
+file(READ ${CURRENT_PACKAGES_DIR}/debug/share/caffe/caffetargets-debug.cmake CAFFE_DEBUG_MODULE)
 string(REPLACE "\${_IMPORT_PREFIX}" "\${_IMPORT_PREFIX}/debug" CAFFE_DEBUG_MODULE "${CAFFE_DEBUG_MODULE}")
-file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/CaffeTargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
+file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/caffetargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
 
