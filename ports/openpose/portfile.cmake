@@ -22,6 +22,10 @@ vcpkg_from_github(
     HEAD_REF master
 )
 
+vcpkg_apply_patches(
+    SOURCE_PATH ${SOURCE_PATH}
+    PATCHES ${CMAKE_CURRENT_LIST_DIR}/windows-fixes.patch
+)
 
 # set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/openpose-1.2.1)
 # vcpkg_download_distfile(ARCHIVE
