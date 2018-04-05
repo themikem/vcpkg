@@ -1,0 +1,24 @@
+Source: openpose
+Version: 1.2.1-1
+Description: OpenPose Library
+Build-Depends: gflags, glog, protobuf, opencv, caffe
+Default-Features: examples
+
+Feature: cuda
+Build-Depends: cuda
+Description: Use CUDA and CuDNN
+
+Feature: opencl
+Build-Depends: opencl
+Description: Use OpenCL
+
+Feature: mkl
+Build-Depends: intel-mkl
+Description: Use Intel MKL in CPU Mode
+
+Feature: examples
+Description: Build Examples
+
+Feature: 3drenderer
+Build-Depends: glut
+Description: Build 3D visualizer
