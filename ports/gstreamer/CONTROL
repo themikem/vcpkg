@@ -1,0 +1,3 @@
+Source: gstreamer
+Version: 1.14.0-1
+Description: A library to efficently create, manipulate, recieve, and stream various video and audio protocols
