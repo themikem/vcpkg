@@ -213,6 +213,12 @@ if("eigen" IN_LIST FEATURES)
   set(WITH_EIGEN ON)
 endif()
 
+set(WITH_GSTREAMER OFF)
+if("gstreamer" IN_LIST FEATURES)
+  set(ENV{GSTREAMER_DIR} "C:/gstreamer/1.0/x86_64")
+  set(WITH_GSTREAMER ON)
+endif()
+
 if(BUILD_opencv_contrib)
   vcpkg_from_github(
       OUT_SOURCE_PATH CONTRIB_SOURCE_PATH
@@ -293,6 +299,7 @@ vcpkg_configure_cmake(
         -DWITH_EIGEN=${WITH_EIGEN}
         -DWITH_FFMPEG=${WITH_FFMPEG}
         -DWITH_GDCM=${WITH_GDCM}
+        -DWITH_GSTREAMER=${WITH_GSTREAMER}
         -DWITH_IPP=${WITH_IPP}
         -DWITH_JASPER=${WITH_JASPER}
         -DWITH_JPEG=${WITH_JPEG}

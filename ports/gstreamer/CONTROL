@@ -1,3 +1,25 @@
 Source: gstreamer
 Version: 1.14.0-1
 Description: A library to efficently create, manipulate, recieve, and stream various video and audio protocols
+Default-Features: badplugins, uglyplugins
+
+Feature: python
+Description: Python support
+
+Feature: vaapi
+Description: Intel Native GPU Support
+
+Feature: devtools
+Description: Gstreamer dev tool support
+
+Feature: csharp
+Description: Gstreamer csharp support
+
+Feature: editingsvc
+Description: Enables editing services build
+
+Feature: badplugins
+Description: Enables build of bad plugin collection
+
+Feature: uglyplugins
+Description: Enables build of ugly plugin collection 
