@@ -82,5 +82,4 @@ Build-Depends: gstreamer
 Description: Gstreamer support for opencv
 
 Feature: python3
-Build-Depends: python3
 Description: Python3 support for OpenCV
