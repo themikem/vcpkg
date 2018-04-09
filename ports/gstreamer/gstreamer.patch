@@ -1,0 +1,84 @@
+diff --git a/msys2_setup.py b/msys2_setup.py
+index 8153f07..c1a197b 100644
+--- a/msys2_setup.py
++++ b/msys2_setup.py
+@@ -128,7 +128,7 @@ class Msys2Configurer(GstBuildConfigurer):
+         print("Making libs", flush=True)
+         self.make_libs()
+         print("Done making .lib files.", flush=True)
+-        if not os.path.exists(os.path.join(source_path, 'build', 'build.ninja')) or \
++        if not os.path.exists(os.path.join(source_path, self.options.build_dir, 'build.ninja')) or \
+                 self.options.reconfigure:
+             print("Running meson", flush=True)
+             if not self.configure_meson():
+@@ -139,7 +139,7 @@ class Msys2Configurer(GstBuildConfigurer):
+                 print("Getting into msys2 environment", flush=True)
+                 subprocess.check_call([sys.executable,
+                                 os.path.join(source_path, 'gst-uninstalled.py'),
+-                                '--builddir', os.path.join(source_path, 'build')])
++                                '--builddir', os.path.join(source_path, self.options.build_dir)])
+             else:
+                 print("Running %s" ' '.join(args), flush=True)
+                 res = subprocess.check_call(args)
+@@ -171,6 +171,10 @@ if __name__ == "__main__":
+     parser.add_argument("-c", "--command", dest="command",
+                         help="Command to run instead of entering environment.",
+                         default="")
++
++    parser.add_argument("--build_dir", action='store',
++                        default="build", help="Path to build directory")
++
+     options, args = parser.parse_known_args()
+ 
+     if not shutil.which('cl'):
+diff --git a/setup.py b/setup.py
+index b42a247..2949dd9 100644
+--- a/setup.py
++++ b/setup.py
+@@ -9,7 +9,7 @@ import subprocess
+ 
+ from common import get_meson
+ from common import accept_command
+-
++# from msys2_setup import Msys2Configurer
+ 
+ PROJECTNAME = "GStreamer build"
+ 
+@@ -28,8 +28,9 @@ class GstBuildConfigurer:
+         return ['--werror']
+ 
+     def configure_meson(self):
++        build_dir = os.path.join(ROOTDIR, self.options.build_dir)
+         if not self.options.reconfigure:
+-            if os.path.exists(ROOTDIR + "/build/build.ninja"):
++            if os.path.exists(ROOTDIR + build_dir + "/build.ninja"):
+                 print("Not reconfiguring")
+                 return True
+ 
+@@ -46,13 +47,13 @@ class GstBuildConfigurer:
+                   % PROJECTNAME)
+             return False
+ 
+-        build_dir = os.path.join(ROOTDIR, "build")
+-        shutil.rmtree(build_dir, True)
+-        os.mkdir(build_dir)
++
++        # shutil.rmtree(build_dir, True)
++        # os.mkdir(build_dir)
+ 
+         try:
+             subprocess.check_call(
+-                [sys.executable, meson, "../"] + self.args + self.get_configs(), cwd=build_dir)
++                [sys.executable, meson, ROOTDIR] + self.args + self.get_configs(), cwd=build_dir)
+             print("\nYou can now build GStreamer and its various subprojects running:\n"
+                   " $ {} -C {!r}".format(os.path.basename(ninja), build_dir))
+         except subprocess.CalledProcessError:
+@@ -75,6 +76,8 @@ if __name__ == "__main__":
+                         ' is kept.')
+     parser.add_argument("--no-error", action='store_true',
+                         default=False, help="Do not error out on warnings")
++    parser.add_argument("--build_dir", action='store',
++                        default="build", help="Path to build directory")
+ 
+     options, args = parser.parse_known_args()
+     configurer = GstBuildConfigurer(options, args)
