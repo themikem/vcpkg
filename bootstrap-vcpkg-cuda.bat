@@ -1,0 +1,1 @@
+.\bootstrap-vcpkg.bat --default X64_WINDOWS --toolset 14.11
