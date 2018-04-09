@@ -1097,3 +1097,19 @@ index 89b709e..a666882 100644
 +endif()
 +
  endif (UNIX AND NOT APPLE)
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 37d7f49..c8a6c94 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -161,6 +161,12 @@ if (${GPU_MODE} MATCHES "CPU_ONLY")
+   if ((UNIX OR WIN32) AND NOT APPLE)
+     OPTION(USE_MKL "Use MKL Intel Branch." ON)
+     find_package(MKL)
++    
++    if(MKL_FOUND)
++      get_filename_component(MKL_PATH ${MKL_INCLUDE_DIR} DIRECTORY)
++    endif()
++
++    message(STATUS "Found MKL: ${MKL_FOUND} / MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR} / MKL_PATH: ${MKL_PATH}")
+   endif ()
+ endif ()

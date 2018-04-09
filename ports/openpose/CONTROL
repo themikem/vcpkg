@@ -1,7 +1,7 @@
 Source: openpose
 Version: 1.2.1-1
 Description: OpenPose Library
-Build-Depends: gflags, glog, protobuf, opencv, caffe
+Build-Depends: gflags, glog, opencv, caffe
 Default-Features: examples
 
 Feature: cuda
@@ -13,7 +13,7 @@ Build-Depends: opencl
 Description: Use OpenCL
 
 Feature: mkl
-Build-Depends: intel-mkl
+Build-Depends: intel-mkl, caffe[mkl]
 Description: Use Intel MKL in CPU Mode
 
 Feature: examples
