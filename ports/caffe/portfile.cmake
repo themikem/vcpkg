@@ -7,8 +7,8 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO willyd/caffe
-    REF ef43793482835f90fe7ed5e492c53f64a36a2413
-    SHA512 d253566cd63b6b748738271492e565a5eab31eeaf1b63edf8b93cbc4a29fbd07c07d486cf54871236b57939dadefe3d12dd3b6a1870271fde376bdeff865fa87
+    REF a44c444ee4ae0e7c0aa77118213d34bb26e9f2e6
+    SHA512 b6289ca0a347d59f0c959aa8ceba51a143d4c48eff11aa20cc30e35364d96c821299bca21a332169883fa7118de5c08c97090330cc3935c39c6fd2f714e106e4
     HEAD_REF windows
 )
 
@@ -106,7 +106,7 @@ string(REPLACE "\${_IMPORT_PREFIX}" "\${_IMPORT_PREFIX}/debug" CAFFE_DEBUG_MODUL
 file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/caffetargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
-file(INSTALL ${SOURCE_PATH}/FindCaffe.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/caffe)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCaffe.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/caffe)
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/caffe RENAME copyright)
 
 vcpkg_copy_pdbs()
