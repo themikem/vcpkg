@@ -2,17 +2,17 @@
 <tools version="1">
     <tool name="cmake">
         <requiredVersion>3.11.0</requiredVersion>
-        <exeRelativePath>cmake-3.11.0-rc4-win32-x86\bin\cmake.exe</exeRelativePath>
-        <url>https://cmake.org/files/v3.11/cmake-3.11.0-rc4-win32-x86.zip</url>
-        <sha256>d3a6694a5750afee7cff17197bf6791b3329c498ca5dfb8d5052e553add787c8</sha256>
-        <archiveRelativePath>cmake-3.11.0-rc4-win32-x86.zip</archiveRelativePath>
+        <exeRelativePath>cmake-3.11.0-win32-x86\bin\cmake.exe</exeRelativePath>
+        <url>https://cmake.org/files/v3.11/cmake-3.11.0-win32-x86.zip</url>
+        <sha256>c473db9e18c1f27024820df917aa2d9d460f69d4cb0305fbf5da7f96ce99754c</sha256>
+        <archiveRelativePath>cmake-3.11.0-win32-x86.zip</archiveRelativePath>
     </tool>
     <tool name="git">
-        <requiredVersion>2.16.2</requiredVersion>
-        <exeRelativePath>MinGit-2.16.2-32-bit\cmd\git.exe</exeRelativePath>
-        <url>https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/MinGit-2.16.2-32-bit.zip</url>
-        <sha256>322c727e482aa97522c64a5ac68bdda3780111e8670bcfb532beac8e11ece5da</sha256>
-        <archiveRelativePath>MinGit-2.16.2-32-bit.zip</archiveRelativePath>
+        <requiredVersion>2.17.0</requiredVersion>
+        <exeRelativePath>MinGit-2.17.0-32-bit\cmd\git.exe</exeRelativePath>
+        <url>https://github.com/git-for-windows/git/releases/download/v2.17.0.windows.1/MinGit-2.17.0-32-bit.zip</url>
+        <sha256>b1896b23d0d7ab7c1ad6705ce760763ae9802cff2d2e0aaee141806a2a319c4c</sha256>
+        <archiveRelativePath>MinGit-2.17.0-32-bit.zip</archiveRelativePath>
     </tool>
     <tool name="vswhere">
         <requiredVersion>2.3.2</requiredVersion>
