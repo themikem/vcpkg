@@ -1,0 +1,13 @@
+diff --git a/cmake/OpenCVDetectPython.cmake b/cmake/OpenCVDetectPython.cmake
+index 6dec76f..1fd99de 100644
+--- a/cmake/OpenCVDetectPython.cmake
++++ b/cmake/OpenCVDetectPython.cmake
+@@ -92,7 +92,7 @@ if(NOT ${found})
+         # builder version can differ from target, matching base version (e.g. 2.7)
+         find_package(PythonLibs "${_version_major_minor}")
+       else()
+-        find_package(PythonLibs "${_version_major_minor}.${_version_patch}" EXACT)
++        find_package(PythonLibs "${_version_major_minor}" EXACT)
+       endif()
+ 
+       if(PYTHONLIBS_FOUND)

@@ -219,6 +219,38 @@ if("gstreamer" IN_LIST FEATURES)
   set(WITH_GSTREAMER ON)
 endif()
 
+set(BUILD_opencv_python3 OFF)
+if("python3" IN_LIST FEATURES)
+  vcpkg_apply_patches(
+    SOURCE_PATH ${SOURCE_PATH}
+    PATCHES
+      "${CMAKE_CURRENT_LIST_DIR}/fix_python.patch"
+  )
+  # set(_PYTHON3_VERSIONS 3.6)
+  find_package (PythonInterp)
+  # find_package (PythonLibs)
+  get_filename_component(PYTHON3_BASE ${PYTHON_EXECUTABLE} DIRECTORY)
+  # set(PYTHON3_BASE "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\Python36_64")
+  set(ENV{PYTHON3_LIBRARY} "${PYTHON3_BASE}\\libs\\python36.lib")
+  set(ENV{PYTHON3_DEBUG_LIBRARY} "${PYTHON3_BASE}\\libs\\python36_d.lib")
+  set(ENV{PYTHON3_INCLUDE_DIR} "${PYTHON3_BASE}\\include")
+
+  message(STATUS "Installing pylint")
+  vcpkg_execute_required_process(
+    COMMAND ${PYTHON_EXECUTABLE} -m pip install pylint
+    WORKING_DIRECTORY ${PYTHON3_BASE}
+    LOGNAME python-pylint-${TARGET_TRIPLET}
+  )
+  message(STATUS "Installing numpy")
+  vcpkg_execute_required_process(
+    COMMAND ${PYTHON_EXECUTABLE} -m pip install numpy
+    WORKING_DIRECTORY ${PYTHON3_BASE}
+    LOGNAME python-numpy-${TARGET_TRIPLET}
+  )
+
+  set(BUILD_opencv_python3 ON)
+endif()
+
 if(BUILD_opencv_contrib)
   vcpkg_from_github(
       OUT_SOURCE_PATH CONTRIB_SOURCE_PATH
@@ -273,7 +305,7 @@ vcpkg_configure_cmake(
         -DBUILD_opencv_line_descriptor=${BUILD_opencv_line_descriptor}
         -DBUILD_opencv_ovis=${BUILD_opencv_ovis}
         -DBUILD_opencv_python2=OFF
-        -DBUILD_opencv_python3=OFF
+        -DBUILD_opencv_python3=${BUILD_opencv_python3}
         -DBUILD_opencv_saliency=${BUILD_opencv_saliency}
         -DBUILD_opencv_sfm=${BUILD_opencv_sfm}
         # PROTOBUF

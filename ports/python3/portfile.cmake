@@ -24,6 +24,15 @@ vcpkg_apply_patches(
         ${CMAKE_CURRENT_LIST_DIR}/0004-Fix-iomodule-for-RS4-SDK.patch
 )
 
+if("full" IN_LIST FEATURES)
+    message(STATUS "Building full distribution.  Getting external sourcecode...")    
+    vcpkg_execute_required_process(
+            COMMAND "${TEMP_SOURCE_PATH}/PCBuild/get_externals.bat"
+            WORKING_DIRECTORY ${TEMP_SOURCE_PATH}/PCBuild
+            LOGNAME get_externals-${TARGET_TRIPLET}
+        )
+endif()
+
 # We need per-triplet directories because we need to patch the project files differently based on the linkage
 # Because the patches patch the same file, they have to be applied in the correct order
 file(COPY ${TEMP_SOURCE_PATH} DESTINATION ${SOURCE_PATH})
@@ -54,9 +63,32 @@ else()
     message(FATAL_ERROR "Unsupported architecture: ${VCPKG_TARGET_ARCHITECTURE}")
 endif()
 
-vcpkg_build_msbuild(
-    PROJECT_PATH ${SOURCE_PATH}/PCBuild/pythoncore.vcxproj
-    PLATFORM ${BUILD_ARCH})
+
+if("full" IN_LIST FEATURES)
+    message(STATUS "Building python full...")    
+    vcpkg_build_msbuild(
+        PROJECT_PATH ${SOURCE_PATH}/PCBuild/pcbuild.proj
+        TARGET Build
+        PLATFORM ${BUILD_ARCH}
+        OPTIONS
+        /p:IncludeExternals=true
+        /p:IncludeSSL=true
+        /p:IncludeTkinter=false)
+else()
+    message(STATUS "Building python core...") 
+    vcpkg_build_msbuild(
+        PROJECT_PATH ${SOURCE_PATH}/PCBuild/pythoncore.vcxproj
+        PLATFORM ${BUILD_ARCH})
+endif()
+
+#     %MSBUILD% "%dir%pcbuild.proj" /t:%target% %parallel% %verbose%^
+#  /p:Configuration=%conf% /p:Platform=%platf%^
+#  /p:IncludeExternals=%IncludeExternals%^
+#  /p:IncludeSSL=%IncludeSSL% /p:IncludeTkinter=%IncludeTkinter%^
+#  /p:UseTestMarker=%UseTestMarker% %GITProperty%^
+# %1 %2 %3 %4 %5 %6 %7 %8 %9
+
+
     
 if (VCPKG_LIBRARY_LINKAGE STREQUAL static)
     vcpkg_apply_patches(
@@ -77,6 +109,9 @@ if (VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     file(COPY ${SOURCE_PATH}/PCBuild/${OUT_DIR}/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
     file(COPY ${SOURCE_PATH}/PCBuild/${OUT_DIR}/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_d.dll DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin)
 endif()
+
+if("full" IN_LIST FEATURES)
+    file(COPY ${SOURCE_PATH}/PCBuild/${OUT_DIR}/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.exe DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
 
 # Handle copyright
 file(COPY ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/python${PYTHON_VERSION_MAJOR})
