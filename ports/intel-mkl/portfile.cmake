@@ -30,3 +30,6 @@ if (MKL_VERSION LESS MKL_REQUIRED_VERSION)
     message(FATAL_ERROR "MKL ${MKL_VERSION} is found but ${MKL_REQUIRED_VERSION} is required. Please download and install a more recent version of MKL from:"
                         "\n    https://registrationcenter.intel.com/en/products/download/3178/\n")
 endif()
+
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindMKL.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
