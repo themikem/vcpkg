@@ -1,0 +1,1099 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c425703..37d7f49 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,7 @@ set(OpenPose_VERSION_MINOR 2)
+ set(OpenPose_VERSION_PATCH 1)
+ set(OpenPose_VERSION ${OpenPose_VERSION_MAJOR}.${OpenPose_VERSION_MINOR}.${OpenPose_VERSION_PATCH})
+ 
++message(STATUS "DEBUG - ${CMAKE_BUILD_TYPE}")
+ 
+ ### CMAKE HEADERS
+ if (${CMAKE_VERSION} VERSION_GREATER 3.0.0)
+@@ -38,7 +39,7 @@ if (WIN32)
+ 
+   set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE TYPE INTERNAL FORCE)
+   
+-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
++  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ")
+   string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+   string(REPLACE "/GR" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ 
+@@ -48,7 +49,7 @@ if (WIN32)
+ 
+   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG:incremental /OPT:REF /OPT:ICF")
+   
+-  string(REPLACE "/MDd" "/MD" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
++  string(REPLACE "/MD " "/MDd" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+   string(REPLACE "/Zi" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+   string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+ elseif (UNIX AND NOT APPLE)
+@@ -73,7 +74,7 @@ set_property(CACHE DL_FRAMEWORK PROPERTY STRINGS CAFFE)
+ # Suboptions for Caffe DL Framework
+ include(CMakeDependentOption)
+ if (${DL_FRAMEWORK} MATCHES "CAFFE")
+-  CMAKE_DEPENDENT_OPTION(BUILD_CAFFE "Build Caffe as part of OpenPose." ON
++  CMAKE_DEPENDENT_OPTION(BUILD_CAFFE "Build Caffe as part of OpenPose." OFF
+     "DL_FRAMEWORK" ON)
+   # OpenPose flags
+   add_definitions(-DUSE_CAFFE)
+@@ -96,6 +97,12 @@ if (WIN32)
+   elseif (${INSTRUCTION_SET} MATCHES "IA32")
+     add_definitions("/arch:IA32")
+   endif (${INSTRUCTION_SET} MATCHES "SSE")
++
++  message(STATUS "SETTING CMAKE MODULE PATH - ${CURRENT_INSTALLED_DIR}/share/")
++  list(APPEND CMAKE_MODULE_PATH "${CURRENT_INSTALLED_DIR}/share/cuda")
++  list(APPEND CMAKE_MODULE_PATH "${CURRENT_INSTALLED_DIR}/share/opencl")
++  list(APPEND CMAKE_MODULE_PATH "${CURRENT_INSTALLED_DIR}/share/intel-mkl")
++
+ endif (WIN32)
+ 
+ # Set the acceleration library
+@@ -110,12 +117,12 @@ set(GPU_MODE CUDA CACHE STRING "Select the acceleration GPU library or CPU other
+ # else ()
+ #   set_property(CACHE GPU_MODE PROPERTY STRINGS CPU_ONLY)
+ # endif ()
+-set_property(CACHE GPU_MODE PROPERTY STRINGS CUDA CPU_ONLY)
++set_property(CACHE GPU_MODE PROPERTY STRINGS CUDA CPU_ONLY OPENCL)
+ 
+ # Look for CUDA
+ set(CUDA_FOUND FALSE)
+ if (${GPU_MODE} MATCHES "CUDA")
+-  find_package(CUDA)
++  find_package(CUDA REQUIRED)
+ endif (${GPU_MODE} MATCHES "CUDA")
+ # Look for OpenCL
+ set(OpenCL_FOUND FALSE)
+@@ -151,8 +158,9 @@ endif ()
+ 
+ # Intel branch with MKL Support
+ if (${GPU_MODE} MATCHES "CPU_ONLY")
+-  if (UNIX AND NOT APPLE)
++  if ((UNIX OR WIN32) AND NOT APPLE)
+     OPTION(USE_MKL "Use MKL Intel Branch." ON)
++    find_package(MKL)
+   endif ()
+ endif ()
+ 
+@@ -207,7 +215,7 @@ else ()
+ endif ()
+ 
+ ### FIND REQUIRED PACKAGES
+-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
++# list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+ 
+ if (${GPU_MODE} MATCHES "CUDA")
+   find_package(CUDA)
+@@ -223,13 +231,17 @@ if (WITH_FLIR_CAMERA)
+   add_definitions(-DWITH_FLIR_CAMERA)
+ endif (WITH_FLIR_CAMERA)
+ 
+-if (UNIX AND NOT APPLE)
++if ((UNIX OR WIN32) AND NOT APPLE)
+   if (${GPU_MODE} MATCHES "CUDA")
+-    include(cmake/Cuda.cmake)
+-    find_package(CuDNN)
++    # include(cmake/Cuda.cmake)
++    find_package(CuDNN REQUIRED)
+   endif ()
+-  find_package(GFlags)
+-  find_package(Glog)
++
++  list(INSERT CMAKE_MODULE_PATH 0 "${CURRENT_INSTALLED_DIR}/share/gflags")
++  find_package(GFLAGS REQUIRED)
++  list(INSERT CMAKE_MODULE_PATH 0 "${CURRENT_INSTALLED_DIR}/share/glog")
++  find_package(GLOG REQUIRED)
++  
+   if (OpenCV_CONFIG_FILE)
+     include (${OpenCV_CONFIG_FILE})
+   elseif (OpenCV_INCLUDE_DIRS AND OpenCV_LIBS_DIR)
+@@ -283,123 +295,127 @@ if (UNIX AND NOT APPLE)
+     endif (USE_CUDNN AND NOT CUDNN_FOUND)
+   endif ()
+ 
++  if (NOT GFLAGS_FOUND)
++    message(FATAL_ERROR "GFlags not found. Install GFlags from the command line using the command(s) --\
++      sudo apt-get install libgflags-dev")
++  endif (NOT GFLAGS_FOUND)
++
+   if (NOT GLOG_FOUND)
+     message(FATAL_ERROR "Glog not found. Install Glog from the command line using the command(s) -\
+       sudo apt-get install libgoogle-glog-dev")
+   endif (NOT GLOG_FOUND)
+ 
+-  if (NOT GFLAGS_FOUND)
+-    message(FATAL_ERROR "GFlags not found. Install GFlags from the command line using the command(s) --\
+-      sudo apt-get install libgflags-dev")
+-  endif (NOT GFLAGS_FOUND)
++
+ 
+   if (NOT OpenCV_FOUND)
+     message(FATAL_ERROR "OpenCV not found. Install OpenCV from the command line using the command(s) --\
+       sudo apt-get install libopencv-dev")
+   endif (NOT OpenCV_FOUND)
+ 
+-endif (UNIX AND NOT APPLE)
++endif ((UNIX OR WIN32) AND NOT APPLE)
+ 
+ include(cmake/Utils.cmake)
+ 
+ if (WIN32)
+ 
+-  if ("${CMAKE_VERSION}" VERSION_GREATER 3.6.3)
+-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT OpenPoseDemo)
+-  endif ("${CMAKE_VERSION}" VERSION_GREATER 3.6.3)
+-
+-  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+-  set(FIND_LIB_PREFIX ${CMAKE_SOURCE_DIR}/3rdparty/windows)
+-
+-  # Download Windows 3rd party
+-  message(STATUS "Downloading windows dependencies...")
+-  set(OP_WIN_URL "http://posefs1.perception.cs.cmu.edu/OpenPose/3rdparty/windows")
+-  set(OP_WIN_DIR "${CMAKE_SOURCE_DIR}/3rdparty/windows")
+-
+-  #TODO Add hashes
+-  download_zip("opencv_310.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 1e5240a64b814b3c0b822f136be78ad7)
+-  download_zip("caffe3rdparty_2018_02_13.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 6653E07E3D2D7226D64FAD2DF0B407FB)
+-  if (${GPU_MODE} MATCHES "OPENCL")
+-    download_zip("caffe_opencl_2018_02_13.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 3ac3e1acf5ee6a4e57920be73053067a)
+-  else ()
+-    download_zip("caffe_2018_01_18.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 4b8e548cc7ea20abea472950dd5301bd)
+-  endif ()
+-  if (WITH_3D_RENDERER)
+-    download_zip("freeglut_2018_01_14.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} BB182187285E06880F0EDE3A39530091)
+-  endif (WITH_3D_RENDERER)
+-  message(STATUS "Windows dependencies downloaded.")
+-
+-  find_library(OpenCV_LIBS opencv_world310 HINTS ${FIND_LIB_PREFIX}/opencv/x64/vc14/lib)
+-  find_library(GFLAGS_LIBRARY_RELEASE gflags HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-  find_library(GFLAGS_LIBRARY_DEBUG gflagsd HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-  find_library(GLOG_LIBRARY_RELEASE glog HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-  find_library(GLOG_LIBRARY_DEBUG glogd HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-  find_library(OpenCV_LIBS opencv_world310 HINTS ${FIND_LIB_PREFIX}/opencv/x64/vc14/lib)
+-
+-  if (${GPU_MODE} MATCHES "OPENCL")
+-    SET(CAFFE_CL_CHECKED True CACHE BOOL "")
+-    unset(Caffe_LIB CACHE)
+-    unset(Caffe_Proto_LIB CACHE)
+-    set(CL "_CL")
+-    find_library(Caffe_LIB caffe HINTS ${FIND_LIB_PREFIX}/caffe_opencl/lib)
+-    find_library(Caffe_Proto_LIB caffeproto HINTS ${FIND_LIB_PREFIX}/caffe_opencl/lib)
+-  else ()
+-    if (CAFFE_CL_CHECKED)
+-      unset(Caffe_LIB CACHE)
+-      unset(Caffe_Proto_LIB CACHE)
+-    endif ()
+-    set(CAFFE_CL_CHECKED 0)
+-    set(CL "")
+-    find_library(Caffe_LIB caffe HINTS ${FIND_LIB_PREFIX}/caffe/lib)
+-    find_library(Caffe_Proto_LIB caffeproto HINTS ${FIND_LIB_PREFIX}/caffe/lib)
+-  endif ()
+-
+-  if (${GPU_MODE} MATCHES "OPENCL")
+-    unset(BOOST_SYSTEM_LIB_RELEASE CACHE)
+-    unset(BOOST_SYSTEM_LIB_DEBUG CACHE)
+-    find_library(BOOST_SYSTEM_LIB_RELEASE boost_system-vc140-mt-1_61 HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-    find_library(BOOST_SYSTEM_LIB_DEBUG boost_system-vc140-mt-gd-1_61 HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
+-  else ()
+-    set(BOOST_SYSTEM_LIB_RELEASE "")
+-    set(BOOST_SYSTEM_LIB_DEBUG "")
+-  endif ()
+-
+-  if (WITH_3D_RENDERER)
+-    find_library(GLUT_LIBRARY freeglut HINTS ${FIND_LIB_PREFIX}/freeglut/lib)
+-    message(STATUS "\${GLUT_LIBRARY} = ${GLUT_LIBRARY}")
+-  endif (WITH_3D_RENDERER)
+-  if (WITH_FLIR_CAMERA)
+-    find_library(SPINNAKER_LIB spinnaker_v140 HINTS ${FIND_LIB_PREFIX}/spinnaker/lib)
+-  endif (WITH_FLIR_CAMERA)
+-  set(Caffe_LIBS ${Caffe_LIB};${Caffe_Proto_LIB})
+-  set(OpenCV_INCLUDE_DIRS "3rdparty/windows/opencv/include")
+-  if (${GPU_MODE} MATCHES "OPENCL")
+-    SET(CAFFE_CL_CHECKED2 True CACHE BOOL "")
+-    unset(Caffe_INCLUDE_DIRS CACHE)
+-    set(Caffe_INCLUDE_DIRS "3rdparty/windows/caffe_opencl/include;3rdparty/windows/caffe_opencl/include2" CACHE FILEPATH "Caffe_INCLUDE_DIRS")
+-  else ()
+-    if (CAFFE_CL_CHECKED2)
+-      unset(Caffe_INCLUDE_DIRS CACHE)
+-    endif ()
+-    set(CAFFE_CL_CHECKED2 0)
+-    set(Caffe_INCLUDE_DIRS "3rdparty/windows/caffe/include;3rdparty/windows/caffe/include2" CACHE FILEPATH "Caffe_INCLUDE_DIRS")
+-  endif ()
+-  set(Boost_INCLUDE_DIRS "3rdparty/windows/caffe3rdparty/include/boost-1_61")
+-  set(WINDOWS_INCLUDE_DIRS "3rdparty/windows/caffe3rdparty/include")
+-  if (WITH_3D_RENDERER)
+-    set(GLUT_INCLUDE_DIRS "3rdparty/windows/freeglut/include")
+-  endif (WITH_3D_RENDERER)
+-  if (WITH_FLIR_CAMERA)
+-    set(SPINNAKER_INCLUDE_DIRS "3rdparty/windows/spinnaker/include")
+-  endif (WITH_FLIR_CAMERA)
+-  set(Caffe_FOUND 1)
++  # if ("${CMAKE_VERSION}" VERSION_GREATER 3.6.3)
++  #   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT OpenPoseDemo)
++  # endif ("${CMAKE_VERSION}" VERSION_GREATER 3.6.3)
++
++  # set_property(GLOBAL PROPERTY USE_FOLDERS ON)
++  # set(FIND_LIB_PREFIX ${CMAKE_SOURCE_DIR}/3rdparty/windows)
++
++  # # Download Windows 3rd party
++  # message(STATUS "Downloading windows dependencies...")
++  # set(OP_WIN_URL "http://posefs1.perception.cs.cmu.edu/OpenPose/3rdparty/windows")
++  # set(OP_WIN_DIR "${CMAKE_SOURCE_DIR}/3rdparty/windows")
++
++  # #TODO Add hashes
++  # download_zip("opencv_310.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 1e5240a64b814b3c0b822f136be78ad7)
++  # download_zip("caffe3rdparty_2018_02_13.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 6653E07E3D2D7226D64FAD2DF0B407FB)
++  # if (${GPU_MODE} MATCHES "OPENCL")
++  #   download_zip("caffe_opencl_2018_02_13.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 3ac3e1acf5ee6a4e57920be73053067a)
++  # else ()
++  #   download_zip("caffe_2018_01_18.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} 4b8e548cc7ea20abea472950dd5301bd)
++  # endif ()
++  # if (WITH_3D_RENDERER)
++  #   download_zip("freeglut_2018_01_14.zip" ${OP_WIN_URL} ${FIND_LIB_PREFIX} BB182187285E06880F0EDE3A39530091)
++  # endif (WITH_3D_RENDERER)
++  # message(STATUS "Windows dependencies downloaded.")
++
++  # find_library(OpenCV_LIBS opencv_world310 HINTS ${FIND_LIB_PREFIX}/opencv/x64/vc14/lib)
++  # find_library(GFLAGS_LIBRARY_RELEASE gflags HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  # find_library(GFLAGS_LIBRARY_DEBUG gflagsd HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  # find_library(GLOG_LIBRARY_RELEASE glog HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  # find_library(GLOG_LIBRARY_DEBUG glogd HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  # find_library(OpenCV_LIBS opencv_world310 HINTS ${FIND_LIB_PREFIX}/opencv/x64/vc14/lib)
++
++  # if (${GPU_MODE} MATCHES "OPENCL")
++  #   SET(CAFFE_CL_CHECKED True CACHE BOOL "")
++  #   unset(Caffe_LIB CACHE)
++  #   unset(Caffe_Proto_LIB CACHE)
++  #   set(CL "_CL")
++  #   find_library(Caffe_LIB caffe HINTS ${FIND_LIB_PREFIX}/caffe_opencl/lib)
++  #   find_library(Caffe_Proto_LIB caffeproto HINTS ${FIND_LIB_PREFIX}/caffe_opencl/lib)
++  # else ()
++  #   if (CAFFE_CL_CHECKED)
++  #     unset(Caffe_LIB CACHE)
++  #     unset(Caffe_Proto_LIB CACHE)
++  #   endif ()
++  #   set(CAFFE_CL_CHECKED 0)
++  #   set(CL "")
++  #   find_library(Caffe_LIB caffe HINTS ${FIND_LIB_PREFIX}/caffe/lib)
++  #   find_library(Caffe_Proto_LIB caffeproto HINTS ${FIND_LIB_PREFIX}/caffe/lib)
++  # endif ()
++
++  # if (${GPU_MODE} MATCHES "OPENCL")
++  #   unset(BOOST_SYSTEM_LIB_RELEASE CACHE)
++  #   unset(BOOST_SYSTEM_LIB_DEBUG CACHE)
++  #   find_library(BOOST_SYSTEM_LIB_RELEASE boost_system-vc140-mt-1_61 HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  #   find_library(BOOST_SYSTEM_LIB_DEBUG boost_system-vc140-mt-gd-1_61 HINTS ${FIND_LIB_PREFIX}/caffe3rdparty/lib)
++  # else ()
++  #   set(BOOST_SYSTEM_LIB_RELEASE "")
++  #   set(BOOST_SYSTEM_LIB_DEBUG "")
++  # endif ()
++
++  # if (WITH_3D_RENDERER)
++  #   find_library(GLUT_LIBRARY freeglut HINTS ${FIND_LIB_PREFIX}/freeglut/lib)
++  #   message(STATUS "\${GLUT_LIBRARY} = ${GLUT_LIBRARY}")
++  # endif (WITH_3D_RENDERER)
++  # if (WITH_FLIR_CAMERA)
++  #   find_library(SPINNAKER_LIB spinnaker_v140 HINTS ${FIND_LIB_PREFIX}/spinnaker/lib)
++  # endif (WITH_FLIR_CAMERA)
++  # set(Caffe_LIBS ${Caffe_LIB};${Caffe_Proto_LIB})
++  # set(OpenCV_INCLUDE_DIRS "3rdparty/windows/opencv/include")
++  # if (${GPU_MODE} MATCHES "OPENCL")
++  #   SET(CAFFE_CL_CHECKED2 True CACHE BOOL "")
++  #   unset(Caffe_INCLUDE_DIRS CACHE)
++  #   set(Caffe_INCLUDE_DIRS "3rdparty/windows/caffe_opencl/include;3rdparty/windows/caffe_opencl/include2" CACHE FILEPATH "Caffe_INCLUDE_DIRS")
++  # else ()
++  #   if (CAFFE_CL_CHECKED2)
++  #     unset(Caffe_INCLUDE_DIRS CACHE)
++  #   endif ()
++  #   set(CAFFE_CL_CHECKED2 0)
++  #   set(Caffe_INCLUDE_DIRS "3rdparty/windows/caffe/include;3rdparty/windows/caffe/include2" CACHE FILEPATH "Caffe_INCLUDE_DIRS")
++  # endif ()
++  # set(Boost_INCLUDE_DIRS "3rdparty/windows/caffe3rdparty/include/boost-1_61")
++  set(WINDOWS_INCLUDE_DIRS "${CURRENT_INSTALLED_DIR}/include")
++  # if (WITH_3D_RENDERER)
++  #   set(GLUT_INCLUDE_DIRS "3rdparty/windows/freeglut/include")
++  # endif (WITH_3D_RENDERER)
++  # if (WITH_FLIR_CAMERA)
++  #   set(SPINNAKER_INCLUDE_DIRS "3rdparty/windows/spinnaker/include")
++  # endif (WITH_FLIR_CAMERA)
++  # set(Caffe_FOUND 1)
+ endif (WIN32)
+ 
+ 
+ ### CAFFE
+-if (UNIX AND NOT APPLE)
++if ((UNIX OR WIN32) AND NOT APPLE)
+ 
+   if (${DL_FRAMEWORK} MATCHES "CAFFE")
++    list(INSERT CMAKE_MODULE_PATH 0 "${CURRENT_INSTALLED_DIR}/share/caffe")
++    find_package(caffe REQUIRED)
+ 
+     # Check if the user specified caffe paths
+     if (Caffe_INCLUDE_DIRS AND Caffe_LIBS AND NOT BUILD_CAFFE)
+@@ -522,7 +538,7 @@ if (UNIX AND NOT APPLE)
+ 
+   endif (${DL_FRAMEWORK} MATCHES "CAFFE")
+ 
+-endif (UNIX AND NOT APPLE)
++endif ((UNIX OR WIN32) AND NOT APPLE)
+ 
+ ### PROJECT INCLUDES
+ # Specify the include directories
+@@ -594,7 +610,7 @@ message(STATUS "Models Downloaded.")
+ 
+ 
+ ### GENERATE DOCUMENTATION
+-if (UNIX AND NOT APPLE)
++if ((UNIX OR WIN32) AND NOT APPLE)
+ 
+   if (BUILD_DOCS)
+     find_package(Doxygen)
+@@ -613,27 +629,32 @@ if (UNIX AND NOT APPLE)
+     endif (DOXYGEN_FOUND)
+   endif (BUILD_DOCS)
+ 
+-endif (UNIX AND NOT APPLE)
++endif ((UNIX OR WIN32) AND NOT APPLE)
+ 
+ 
+ ### INSTALL
+-if (UNIX AND NOT APPLE)
++if ((UNIX OR WIN32) AND NOT APPLE)
+   if (Caffe_FOUND)
+     # Install the headers
+-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/openpose DESTINATION include)
+-    install(EXPORT OpenPose DESTINATION lib/OpenPose)
++    if(NOT CMAKE_BUILD_TYPE MATCHES Debug)
++      install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/openpose DESTINATION ${CURRENT_PACKAGES_DIR}/include)
++    endif()
++
++    if(CMAKE_BUILD_TYPE MATCHES Debug)
++      install(EXPORT OpenPose DESTINATION ${CURRENT_PACKAGES_DIR}/debug/share/openpose)
++    else()
++      install(EXPORT OpenPose DESTINATION ${CURRENT_PACKAGES_DIR}/share/openpose)
++    endif()
++    
+     if (BUILD_CAFFE)
+       install(DIRECTORY ${CMAKE_BINARY_DIR}/caffe/include/caffe DESTINATION include)
+       install(DIRECTORY ${CMAKE_BINARY_DIR}/caffe/lib/ DESTINATION lib)
+     endif (BUILD_CAFFE)
+ 
+     # Compute installation prefix relative to this file
+-    configure_file(
+-      ${CMAKE_SOURCE_DIR}/cmake/OpenPoseConfig.cmake.in
+-      ${CMAKE_BINARY_DIR}/cmake/OpenPoseConfig.cmake @ONLY)
++    configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPoseConfig.cmake.in ${CMAKE_BINARY_DIR}/cmake/OpenPoseConfig.cmake @ONLY)
+ 
+-    install(FILES ${CMAKE_BINARY_DIR}/cmake/OpenPoseConfig.cmake
+-      DESTINATION lib/OpenPose)
++    install(FILES ${CMAKE_BINARY_DIR}/cmake/OpenPoseConfig.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/openpose)
+ 
+     # Uninstall target
+     configure_file(
+@@ -641,7 +662,6 @@ if (UNIX AND NOT APPLE)
+       "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
+       IMMEDIATE @ONLY)
+ 
+-    add_custom_target(uninstall
+-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
++    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+   endif (Caffe_FOUND)
+-endif (UNIX AND NOT APPLE)
++endif ((UNIX OR WIN32) AND NOT APPLE)
+diff --git a/cmake/Cuda.cmake b/cmake/Cuda.cmake
+index a922038..31ba383 100644
+--- a/cmake/Cuda.cmake
++++ b/cmake/Cuda.cmake
+@@ -199,6 +199,8 @@ function(detect_cuDNN)
+   # dynamic libs have different suffix in mac and linux
+   if (APPLE)
+     set(CUDNN_LIB_NAME "libcudnn.dylib")
++  elseif(WIN32)
++    set(CUDNN_LIB_NAME "cudnn.lib")
+   else()
+     set(CUDNN_LIB_NAME "libcudnn.so")
+   endif ()
+diff --git a/cmake/Modules/FindCuDNN.cmake b/cmake/Modules/FindCuDNN.cmake
+index 104eafa..a3fc657 100644
+--- a/cmake/Modules/FindCuDNN.cmake
++++ b/cmake/Modules/FindCuDNN.cmake
+@@ -1,5 +1,9 @@
+ set(CUDNN_ROOT "" CACHE PATH "CUDNN root folder")
+-set(CUDNN_LIB_NAME "libcudnn.so")
++if(UNIX)
++    set(CUDNN_LIB_NAME "libcudnn.so")
++elseif(WIN32)
++    set(CUDNN_LIB_NAME "cudnn.lib")
++endif()
+ 
+ find_path(CUDNN_INCLUDE cudnn.h
+     PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDA_TOOLKIT_INCLUDE}
+diff --git a/cmake/Modules/FindGlog.cmake b/cmake/Modules/FindGlog.cmake
+index 99abbe4..27f9e3d 100644
+--- a/cmake/Modules/FindGlog.cmake
++++ b/cmake/Modules/FindGlog.cmake
+@@ -8,7 +8,7 @@
+ #  GLOG_INCLUDE_DIRS
+ #  GLOG_LIBRARIES
+ #  GLOG_LIBRARYRARY_DIRS
+-
++message(STATUS "CALLING BUILT-IN FIND GLOG")
+ include(FindPackageHandleStandardArgs)
+ 
+ set(GLOG_ROOT_DIR "" CACHE PATH "Folder contains Google glog")
+diff --git a/cmake/OpenPoseConfig.cmake.in b/cmake/OpenPoseConfig.cmake.in
+index 82395e7..f13e13f 100644
+--- a/cmake/OpenPoseConfig.cmake.in
++++ b/cmake/OpenPoseConfig.cmake.in
+@@ -3,7 +3,7 @@ get_filename_component(_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
+ get_filename_component(_prefix "${_dir}/../.." ABSOLUTE)
+ 
+ # Import the targets
+-include("${_prefix}/lib/OpenPose/OpenPose.cmake")
++include("${_prefix}/share/openpose/OpenPose.cmake")
+ if (@BUILD_CAFFE@)
+   set(Caffe_INCLUDE_DIRS "${_prefix}/include/caffe")
+   # set(Caffe_LIBS "${_prefix}/lib/libcaffe.so")
+diff --git a/examples/openpose/CMakeLists.txt b/examples/openpose/CMakeLists.txt
+index 16b501a..39c9797 100644
+--- a/examples/openpose/CMakeLists.txt
++++ b/examples/openpose/CMakeLists.txt
+@@ -15,13 +15,18 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+   add_executable(${EXE_NAME} ${EXAMPLE_FILE})
+   target_link_libraries( ${EXE_NAME} openpose ${GLOG_LIBRARY} ${GFLAGS_LIBRARY} ${Caffe_LIBS} ${MKL_LIBS} ${GLUT_LIBRARY} ${SPINNAKER_LIB} ${OpenCL_LIBRARIES})
+   
+-  if (WIN32)
+-    set_property(TARGET ${EXE_NAME} PROPERTY FOLDER "Examples")
+-    configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+-        ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+-    # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-  endif (WIN32)
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS ${EXE_NAME} RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++  else()
++    install(TARGETS ${EXE_NAME} RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/tools/openpose)
++  endif()
++  # if (WIN32)
++  #   set_property(TARGET ${EXE_NAME} PROPERTY FOLDER "Examples")
++  #   configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
++  #       ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
++  #   # Properties->General->Output Directory
++  #   set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++  #   set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++  # endif (WIN32)
+ 
+ endforeach()
+diff --git a/examples/tests/CMakeLists.txt b/examples/tests/CMakeLists.txt
+index 57942a1..d8c2b2f 100644
+--- a/examples/tests/CMakeLists.txt
++++ b/examples/tests/CMakeLists.txt
+@@ -21,8 +21,11 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+     configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+         ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+     # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++    if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++    else()
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/tools/openpose)
++    endif()
+   endif (WIN32)
+ 
+ endforeach()
+diff --git a/examples/tutorial_add_module/CMakeLists.txt b/examples/tutorial_add_module/CMakeLists.txt
+index 7c2afa1..e40d445 100644
+--- a/examples/tutorial_add_module/CMakeLists.txt
++++ b/examples/tutorial_add_module/CMakeLists.txt
+@@ -23,8 +23,11 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+     configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+         ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+     # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++    if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++    else()
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/tools/openpose)
++    endif()
+   endif (WIN32)
+ 
+ endforeach()
+diff --git a/examples/tutorial_pose/CMakeLists.txt b/examples/tutorial_pose/CMakeLists.txt
+index 381d3b4..d8d64ac 100644
+--- a/examples/tutorial_pose/CMakeLists.txt
++++ b/examples/tutorial_pose/CMakeLists.txt
+@@ -21,8 +21,11 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+     configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+         ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+     # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++    if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++    else()
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/tools/openpose)
++    endif()
+   endif (WIN32)
+ 
+ endforeach()
+diff --git a/examples/tutorial_thread/CMakeLists.txt b/examples/tutorial_thread/CMakeLists.txt
+index 0329f2b..bb93bbe 100644
+--- a/examples/tutorial_thread/CMakeLists.txt
++++ b/examples/tutorial_thread/CMakeLists.txt
+@@ -23,8 +23,11 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+     configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+         ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+     # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++    if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++    else()
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/tools/openpose)
++    endif()
+   endif (WIN32)
+ 
+ endforeach()
+diff --git a/examples/tutorial_wrapper/CMakeLists.txt b/examples/tutorial_wrapper/CMakeLists.txt
+index 62fe5ac..7103223 100644
+--- a/examples/tutorial_wrapper/CMakeLists.txt
++++ b/examples/tutorial_wrapper/CMakeLists.txt
+@@ -24,8 +24,11 @@ foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+     configure_file(${CMAKE_SOURCE_DIR}/cmake/OpenPose${CL}.vcxproj.user
+         ${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.vcxproj.user @ONLY)
+     # Properties->General->Output Directory
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++    if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CURRENT_PACKAGES_DIR}/debug/tools/openpose)
++    else()
++    set_property(TARGET ${EXE_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/tools/openpose)
++    endif()
+   endif (WIN32)
+ 
+ endforeach()
+diff --git a/src/openpose/3d/CMakeLists.txt b/src/openpose/3d/CMakeLists.txt
+index a6aca2d..eff4e15 100644
+--- a/src/openpose/3d/CMakeLists.txt
++++ b/src/openpose/3d/CMakeLists.txt
+@@ -15,17 +15,25 @@ if (UNIX AND NOT APPLE)
+     add_library(openpose_3d ${SOURCES_OP_3D})
+   endif ()
+ 
+-  add_library(caffe SHARED IMPORTED)
++  # add_library(caffe SHARED IMPORTED)
+   set_property(TARGET caffe PROPERTY IMPORTED_LOCATION ${Caffe_LIBS}) 
+-  target_link_libraries(openpose_3d caffe ${MKL_LIBS})
++  target_link_libraries(openpose_3d caffe ${MKL_LIBS} openpose_utilities)
+ 
+   if (BUILD_CAFFE)
+     add_dependencies(openpose_3d openpose_caffe)
+   endif (BUILD_CAFFE)
+-
+-  install(TARGETS openpose_3d
++  
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_3d
++      EXPORT OpenPose
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_3d
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/CMakeLists.txt b/src/openpose/CMakeLists.txt
+index cedcfdb..6894df9 100644
+--- a/src/openpose/CMakeLists.txt
++++ b/src/openpose/CMakeLists.txt
+@@ -34,16 +34,26 @@ if(UNIX AND NOT APPLE)
+   endif (CMAKE_COMPILER_IS_GNUCXX)
+ # Windows
+ elseif (WIN32)
+-  set_property(TARGET openpose PROPERTY DEBUG_POSTFIX d)
+-  target_link_libraries(openpose ${OpenCV_LIBS} ${Caffe_LIBS} ${GLUT_LIBRARY} ${SPINNAKER_LIB} ${OpenCL_LIBRARIES}
+-      debug ${GFLAGS_LIBRARY_DEBUG} optimized ${GFLAGS_LIBRARY_RELEASE}
+-      debug ${GLOG_LIBRARY_DEBUG} optimized ${GLOG_LIBRARY_RELEASE})
+-  if (${GPU_MODE} MATCHES "OPENCL")
+-    target_link_libraries(openpose debug ${BOOST_SYSTEM_LIB_DEBUG} optimized ${BOOST_SYSTEM_LIB_RELEASE})
+-  endif (${GPU_MODE} MATCHES "OPENCL")
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    set_property(TARGET openpose PROPERTY Debug_POSTFIX d)
++    
++    target_link_libraries(openpose ${OpenCV_LIBS} ${Caffe_LIBS} ${GLUT_LIBRARY} ${SPINNAKER_LIB} ${OpenCL_LIBRARIES}
++        ${GFLAGS_LIBRARY_DEBUG} ${GLOG_LIBRARY_DEBUG})
++    if (${GPU_MODE} MATCHES "OPENCL")
++      target_link_libraries(openpose ${BOOST_SYSTEM_LIB_DEBUG})
++    endif (${GPU_MODE} MATCHES "OPENCL")
++  else()
++    target_link_libraries(openpose ${OpenCV_LIBS} ${Caffe_LIBS} ${GLUT_LIBRARY} ${SPINNAKER_LIB} ${OpenCL_LIBRARIES}
++      ${GFLAGS_LIBRARY_RELEASE} ${GLOG_LIBRARY_RELEASE})
++    if (${GPU_MODE} MATCHES "OPENCL")
++      target_link_libraries(openpose ${BOOST_SYSTEM_LIB_RELEASE})
++    endif (${GPU_MODE} MATCHES "OPENCL")
++  endif(CMAKE_BUILD_TYPE MATCHES Debug)
++
+   if (${DL_FRAMEWORK} MATCHES "CAFFE")
+     target_compile_definitions(openpose PRIVATE BOOST_ALL_NO_LIB)
+   endif(${DL_FRAMEWORK} MATCHES "CAFFE")
++
+   set_property(TARGET openpose PROPERTY FOLDER "OpenPose library")
+   
+   foreach (SUB_DIR ${SUB_DIRS})
+@@ -54,15 +64,20 @@ elseif (WIN32)
+         "${CMAKE_SOURCE_DIR}/include/openpose/${SUB_DIR}/*.hu")
+     source_group("Header Files\\${SUB_DIR}" FILES ${SUB_MOD_HEADERS})
+   endforeach (SUB_DIR ${SUB_DIRS})
++
+   set_target_properties(openpose PROPERTIES COMPILE_FLAGS -DOP_EXPORTS)
++
+   # Properties->General->Output Directory
+-  set_property(TARGET openpose PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
+-  set_property(TARGET openpose PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/$(Platform)/$(Configuration))
++  if(CMAKE_BUILD_TYPE MATCHES Debug)
++    set_property(TARGET openpose PROPERTY RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CURRENT_PACKAGES_DIR}/debug/bin)
++  else()
++    set_property(TARGET openpose PROPERTY RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CURRENT_PACKAGES_DIR}/bin)
++  endif()
+ 
+ endif (UNIX AND NOT APPLE)
+ 
+-if (UNIX AND NOT APPLE)
+-  add_library(caffe SHARED IMPORTED)
++if ((UNIX OR WIN32) AND NOT APPLE)
++  # add_library(caffe SHARED IMPORTED)
+   set_property(TARGET caffe PROPERTY IMPORTED_LOCATION ${Caffe_LIBS})
+   target_link_libraries(openpose caffe)
+ 
+@@ -72,9 +87,17 @@ if (UNIX AND NOT APPLE)
+ 
+   set_property(TARGET openpose PROPERTY VERSION ${OpenPose_VERSION})
+ 
+-  install(TARGETS openpose
++  IF(CMAKE_BUILD_TYPE MATCHES Debug)
++    install(TARGETS openpose
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
+-endif (UNIX AND NOT APPLE)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose
++      EXPORT OpenPose
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
++endif ((UNIX OR WIN32) AND NOT APPLE)
+diff --git a/src/openpose/core/CMakeLists.txt b/src/openpose/core/CMakeLists.txt
+index d932f09..fa5079b 100644
+--- a/src/openpose/core/CMakeLists.txt
++++ b/src/openpose/core/CMakeLists.txt
+@@ -21,18 +21,29 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_CORE_WITH_CP} PARENT_SCOPE
+ 
+ if (UNIX AND NOT APPLE)
+   if (${GPU_MODE} MATCHES "CUDA")
+-    cuda_add_library(openpose_core ${SOURCES_OP_CORE})
++    cuda_add_library(openpose_core STATIC ${SOURCES_OP_CORE})
+   else()
+-    add_library(openpose_core ${SOURCES_OP_CORE})
++    add_library(openpose_core STATIC ${SOURCES_OP_CORE})
+   endif ()
+ 
+   if (BUILD_CAFFE)
+     add_dependencies(openpose_core openpose_caffe)
+   endif (BUILD_CAFFE)
+ 
++  target_link_libraries(openpose_core ${OpenCV_LIBS} openpose_utilities)
++
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++  install(TARGETS openpose_core
++    EXPORT OpenPose
++    RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++    LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++    ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
+   install(TARGETS openpose_core
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++    EXPORT OpenPose
++    RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++    LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++    ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/experimental/tracking/CMakeLists.txt b/src/openpose/experimental/tracking/CMakeLists.txt
+index a9b79d8..072ac7e 100644
+--- a/src/openpose/experimental/tracking/CMakeLists.txt
++++ b/src/openpose/experimental/tracking/CMakeLists.txt
+@@ -10,11 +10,22 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_TRACKING_WITH_CP} PARENT_S
+ if (UNIX AND NOT APPLE)
+ 	add_library(openpose_tracking ${SOURCES_OP_TRACKING})
+ 
+-	set_target_properties(openpose_tracking PROPERTIES COMPILE_FLAGS ${OP_CXX_FLAGS})
++    set_target_properties(openpose_tracking PROPERTIES COMPILE_FLAGS "${OP_CXX_FLAGS}")
++    
++    target_link_libraries(openpose_tracking ${OpenCV_LIBS} openpose_core)
++
++	if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_tracking
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_tracking
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ 
+-	install(TARGETS openpose_tracking
+-	    EXPORT OpenPose
+-	    RUNTIME DESTINATION bin
+-	    LIBRARY DESTINATION lib
+-	    ARCHIVE DESTINATION lib/openpose)
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/face/CMakeLists.txt b/src/openpose/face/CMakeLists.txt
+index d8a3625..a09ae70 100644
+--- a/src/openpose/face/CMakeLists.txt
++++ b/src/openpose/face/CMakeLists.txt
+@@ -25,9 +25,17 @@ if (UNIX AND NOT APPLE)
+     add_dependencies(openpose_face openpose_caffe)
+   endif (BUILD_CAFFE)
+ 
+-  install(TARGETS openpose_face 
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_face
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_face
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/filestream/CMakeLists.txt b/src/openpose/filestream/CMakeLists.txt
+index d95c32d..43d8283 100644
+--- a/src/openpose/filestream/CMakeLists.txt
++++ b/src/openpose/filestream/CMakeLists.txt
+@@ -17,9 +17,20 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_FILESTREAM_WITH_CP} PARENT
+ if (UNIX AND NOT APPLE)
+   add_library(openpose_filestream ${SOURCES_OP_FILESTREAM})
+ 
+-  install(TARGETS openpose_filestream
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++  target_link_libraries(openpose_filestream openpose_utilities ${OpenCV_LIBS})
++
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_filestream
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_filestream
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/gpu/CMakeLists.txt b/src/openpose/gpu/CMakeLists.txt
+index 610c27b..7490167 100644
+--- a/src/openpose/gpu/CMakeLists.txt
++++ b/src/openpose/gpu/CMakeLists.txt
+@@ -15,11 +15,20 @@ if (UNIX AND NOT APPLE)
+     add_library(openpose_gpu ${SOURCES_OP_GPU})
+   endif ()
+ 
+-  # target_link_libraries(openpose_gpu openpose_core)
++  target_link_libraries(openpose_gpu openpose_utilities)
+ 
+-  install(TARGETS openpose_gpu
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++  # target_link_libraries(openpose_gpu openpose_core)
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_gpu
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_gpu
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/gui/CMakeLists.txt b/src/openpose/gui/CMakeLists.txt
+index 10f4c47..7ece803 100644
+--- a/src/openpose/gui/CMakeLists.txt
++++ b/src/openpose/gui/CMakeLists.txt
+@@ -17,10 +17,18 @@ if (UNIX AND NOT APPLE)
+   add_library(openpose_gui ${SOURCES_OP_GUI})
+   target_link_libraries(openpose_gui openpose_pose ${OpenCV_LIBS})
+ 
+-  install(TARGETS openpose_gui
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_gui
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_gui
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ endif (UNIX AND NOT APPLE)
+ 
+diff --git a/src/openpose/hand/CMakeLists.txt b/src/openpose/hand/CMakeLists.txt
+index 59d7dd4..1c0370e 100644
+--- a/src/openpose/hand/CMakeLists.txt
++++ b/src/openpose/hand/CMakeLists.txt
+@@ -25,9 +25,18 @@ if (UNIX AND NOT APPLE)
+     add_dependencies(openpose_hand openpose_caffe)
+   endif (BUILD_CAFFE)
+ 
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
+   install(TARGETS openpose_hand
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++else()
++  install(TARGETS openpose_hand
++      EXPORT OpenPose
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/net/CMakeLists.txt b/src/openpose/net/CMakeLists.txt
+index 69fd985..070d853 100644
+--- a/src/openpose/net/CMakeLists.txt
++++ b/src/openpose/net/CMakeLists.txt
+@@ -25,7 +25,7 @@ if (UNIX AND NOT APPLE)
+     add_library(openpose_net ${SOURCES_OP_NET})
+   endif ()
+ 
+-  add_library(caffe SHARED IMPORTED)
++  # add_library(caffe SHARED IMPORTED)
+   set_property(TARGET caffe PROPERTY IMPORTED_LOCATION ${Caffe_LIBS}) 
+   target_link_libraries(openpose_net caffe ${MKL_LIBS})
+ 
+@@ -33,9 +33,18 @@ if (UNIX AND NOT APPLE)
+     add_dependencies(openpose_net openpose_caffe)
+   endif (BUILD_CAFFE)
+ 
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
+   install(TARGETS openpose_net
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_net
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/pose/CMakeLists.txt b/src/openpose/pose/CMakeLists.txt
+index df4fcf6..017ff1a 100644
+--- a/src/openpose/pose/CMakeLists.txt
++++ b/src/openpose/pose/CMakeLists.txt
+@@ -29,9 +29,17 @@ if (UNIX AND NOT APPLE)
+     add_dependencies(openpose_pose openpose_caffe)
+   endif (BUILD_CAFFE)
+ 
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
+   install(TARGETS openpose_pose
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
++    install(TARGETS openpose_pose
++        EXPORT OpenPose
++        RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++        LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++        ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/producer/CMakeLists.txt b/src/openpose/producer/CMakeLists.txt
+index 6130f7b..7ef0478 100644
+--- a/src/openpose/producer/CMakeLists.txt
++++ b/src/openpose/producer/CMakeLists.txt
+@@ -16,12 +16,20 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_PRODUCER_WITH_CP} PARENT_S
+ 
+ if (UNIX AND NOT APPLE)
+   add_library(openpose_producer ${SOURCES_OP_PRODUCER})
+-  target_link_libraries(openpose_producer ${OpenCV_LIBS} openpose_core 
+-      openpose_thread openpose_filestream)
++  target_link_libraries(openpose_producer ${OpenCV_LIBS} openpose_core openpose_thread openpose_filestream)
+ 
++      if(CMAKE_BUILD_TYPE MATCHES Debug)  
++    install(TARGETS openpose_producer
++      EXPORT OpenPose
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++  else()
+   install(TARGETS openpose_producer
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++  endif()
++      
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/thread/CMakeLists.txt b/src/openpose/thread/CMakeLists.txt
+index 14b6814..e731242 100644
+--- a/src/openpose/thread/CMakeLists.txt
++++ b/src/openpose/thread/CMakeLists.txt
+@@ -8,10 +8,19 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_THREAD_WITH_CP} PARENT_SCO
+ 
+ if (UNIX AND NOT APPLE)
+ 	add_library(openpose_thread ${SOURCES_OP_THREAD})
+-	
+-	install(TARGETS openpose_thread 
+-	    EXPORT OpenPose
+-	    RUNTIME DESTINATION bin
+-	    LIBRARY DESTINATION lib
+-	    ARCHIVE DESTINATION lib/openpose)
++
++	if(CMAKE_BUILD_TYPE MATCHES Debug)  
++install(TARGETS openpose_thread
++	EXPORT OpenPose
++	RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++	LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++	ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++else()
++install(TARGETS openpose_thread
++	EXPORT OpenPose
++	RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++	LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++	ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/utilities/CMakeLists.txt b/src/openpose/utilities/CMakeLists.txt
+index d18cc8d..457a65a 100644
+--- a/src/openpose/utilities/CMakeLists.txt
++++ b/src/openpose/utilities/CMakeLists.txt
+@@ -14,16 +14,25 @@ set(SOURCES_OPENPOSE ${SOURCES_OPENPOSE} ${SOURCES_OP_UTILITIES_WITH_CP} PARENT_
+ 
+ if (UNIX AND NOT APPLE)
+   if (${GPU_MODE} MATCHES "CUDA")
+-    cuda_add_library(openpose_utilities ${SOURCES_OP_UTILITIES})
++    cuda_add_library(openpose_utilities STATIC ${SOURCES_OP_UTILITIES})
+   else()
+-    add_library(openpose_utilities ${SOURCES_OP_UTILITIES})
++    add_library(openpose_utilities STATIC ${SOURCES_OP_UTILITIES})
+   endif ()
+ 
+-  target_link_libraries(openpose_utilities openpose_producer openpose_filestream)
++  target_link_libraries(openpose_utilities)
+ 
++  if(CMAKE_BUILD_TYPE MATCHES Debug)  
+   install(TARGETS openpose_utilities
+-      EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++	EXPORT OpenPose
++	RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++	LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++	ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++else()
++install(TARGETS openpose_utilities
++	EXPORT OpenPose
++	RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++	LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++	ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++endif()
++
+ endif (UNIX AND NOT APPLE)
+diff --git a/src/openpose/wrapper/CMakeLists.txt b/src/openpose/wrapper/CMakeLists.txt
+index 89b709e..a666882 100644
+--- a/src/openpose/wrapper/CMakeLists.txt
++++ b/src/openpose/wrapper/CMakeLists.txt
+@@ -18,9 +18,18 @@ if (UNIX AND NOT APPLE)
+       openpose_core openpose_face openpose_filestream openpose_gui openpose_producer 
+       openpose_utilities)
+ 
++      if(CMAKE_BUILD_TYPE MATCHES Debug)  
++install(TARGETS openpose_wrapper
++      EXPORT OpenPose
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/debug/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/debug/lib)
++else()
+   install(TARGETS openpose_wrapper
+       EXPORT OpenPose
+-      RUNTIME DESTINATION bin
+-      LIBRARY DESTINATION lib
+-      ARCHIVE DESTINATION lib/openpose)
++      RUNTIME DESTINATION ${CURRENT_PACKAGES_DIR}/bin
++      LIBRARY DESTINATION ${CURRENT_PACKAGES_DIR}/lib
++      ARCHIVE DESTINATION ${CURRENT_PACKAGES_DIR}/lib)
++endif()
++
+ endif (UNIX AND NOT APPLE)
