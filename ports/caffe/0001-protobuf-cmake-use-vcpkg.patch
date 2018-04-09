@@ -1,0 +1,19 @@
+diff --git a/cmake/ProtoBuf.cmake b/cmake/ProtoBuf.cmake
+index f2b65e2..38680f6 100644
+--- a/cmake/ProtoBuf.cmake
++++ b/cmake/ProtoBuf.cmake
+@@ -2,12 +2,13 @@
+ # the standard cmake script with version and python generation support
+ 
+ if(MSVC)
++  list(INSERT CMAKE_MODULE_PATH 0 ${CURRENT_INSTALLED_DIR}/share/protobuf)
+   # search using protobuf-config.cmake
+   # required protobuf 3.3 for shared library build only
+   if(BUILD_SHARED_LIBS)
+     set(Protobuf_REQUIRED_VERSION 3.3)
+   endif()
+-  find_package( Protobuf ${Protobuf_REQUIRED_VERSION} REQUIRED NO_MODULE)
++  find_package( Protobuf ${Protobuf_REQUIRED_VERSION} REQUIRED)
+   if(TARGET protobuf::libprotobuf)
+     set(PROTOBUF_LIBRARIES protobuf::libprotobuf)
+     get_target_property(PROTOBUF_INCLUDE_DIR protobuf::libprotobuf INTERFACE_INCLUDE_DIRECTORIES)
