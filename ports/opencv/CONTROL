@@ -77,9 +77,14 @@ Feature: eigen
 Build-Depends: eigen3
 Description: Eigen support for opencv
 
+Feature: openni2
+Build-Depends: openni2
+Description: Support for OpenNI2 video data sources for opencv
+
 Feature: gstreamer
 Build-Depends: gstreamer
 Description: Gstreamer support for opencv
 
 Feature: python3
 Description: Python3 support for OpenCV
+

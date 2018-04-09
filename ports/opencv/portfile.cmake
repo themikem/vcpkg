@@ -219,6 +219,11 @@ if("gstreamer" IN_LIST FEATURES)
   set(WITH_GSTREAMER ON)
 endif()
 
+if("openni2" IN_LIST FEATURES)
+  set(WITH_OPENNI2 ON)
+  list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/openni2)
+set(WITH_OPENNI2 OFF)
+
 set(BUILD_opencv_python3 OFF)
 if("python3" IN_LIST FEATURES)
   vcpkg_apply_patches(
@@ -347,6 +352,7 @@ vcpkg_configure_cmake(
         -DWITH_VTK=${WITH_VTK}
         -DWITH_WEBP=${WITH_WEBP}
         -DWITH_ZLIB=${WITH_ZLIB}
+        -DWITH_OPENNI2=${WITH_OPENNI2}
     OPTIONS_DEBUG
         -DINSTALL_HEADERS=OFF
         -DINSTALL_OTHER=OFF
