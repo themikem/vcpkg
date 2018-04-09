@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index c425703..37d7f49 100644
+index c425703..00984bb 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -4,6 +4,7 @@ set(OpenPose_VERSION_MINOR 2)
@@ -65,7 +65,7 @@ index c425703..37d7f49 100644
  endif (${GPU_MODE} MATCHES "CUDA")
  # Look for OpenCL
  set(OpenCL_FOUND FALSE)
-@@ -151,8 +158,9 @@ endif ()
+@@ -151,8 +158,14 @@ endif ()
  
  # Intel branch with MKL Support
  if (${GPU_MODE} MATCHES "CPU_ONLY")
@@ -73,10 +73,15 @@ index c425703..37d7f49 100644
 +  if ((UNIX OR WIN32) AND NOT APPLE)
      OPTION(USE_MKL "Use MKL Intel Branch." ON)
 +    find_package(MKL)
++    
++    if(MKL_FOUND)
++      get_filename_component(MKL_PATH ${MKL_INCLUDE_DIR} DIRECTORY)
++      message(STATUS "Found MKL: ${MKL_FOUND} / MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR} / MKL_PATH: ${MKL_PATH}")
++    endif()
    endif ()
  endif ()
  
-@@ -207,7 +215,7 @@ else ()
+@@ -207,7 +220,7 @@ else ()
  endif ()
  
  ### FIND REQUIRED PACKAGES
@@ -85,7 +90,7 @@ index c425703..37d7f49 100644
  
  if (${GPU_MODE} MATCHES "CUDA")
    find_package(CUDA)
-@@ -223,13 +231,17 @@ if (WITH_FLIR_CAMERA)
+@@ -223,13 +236,17 @@ if (WITH_FLIR_CAMERA)
    add_definitions(-DWITH_FLIR_CAMERA)
  endif (WITH_FLIR_CAMERA)
  
@@ -108,7 +113,7 @@ index c425703..37d7f49 100644
    if (OpenCV_CONFIG_FILE)
      include (${OpenCV_CONFIG_FILE})
    elseif (OpenCV_INCLUDE_DIRS AND OpenCV_LIBS_DIR)
-@@ -283,123 +295,127 @@ if (UNIX AND NOT APPLE)
+@@ -283,123 +300,127 @@ if (UNIX AND NOT APPLE)
      endif (USE_CUDNN AND NOT CUDNN_FOUND)
    endif ()
  
@@ -331,7 +336,7 @@ index c425703..37d7f49 100644
  
      # Check if the user specified caffe paths
      if (Caffe_INCLUDE_DIRS AND Caffe_LIBS AND NOT BUILD_CAFFE)
-@@ -522,7 +538,7 @@ if (UNIX AND NOT APPLE)
+@@ -522,7 +543,7 @@ if (UNIX AND NOT APPLE)
  
    endif (${DL_FRAMEWORK} MATCHES "CAFFE")
  
@@ -340,7 +345,7 @@ index c425703..37d7f49 100644
  
  ### PROJECT INCLUDES
  # Specify the include directories
-@@ -594,7 +610,7 @@ message(STATUS "Models Downloaded.")
+@@ -594,7 +615,7 @@ message(STATUS "Models Downloaded.")
  
  
  ### GENERATE DOCUMENTATION
@@ -349,7 +354,7 @@ index c425703..37d7f49 100644
  
    if (BUILD_DOCS)
      find_package(Doxygen)
-@@ -613,27 +629,32 @@ if (UNIX AND NOT APPLE)
+@@ -613,27 +634,32 @@ if (UNIX AND NOT APPLE)
      endif (DOXYGEN_FOUND)
    endif (BUILD_DOCS)
  
@@ -391,7 +396,7 @@ index c425703..37d7f49 100644
  
      # Uninstall target
      configure_file(
-@@ -641,7 +662,6 @@ if (UNIX AND NOT APPLE)
+@@ -641,7 +667,6 @@ if (UNIX AND NOT APPLE)
        "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
        IMMEDIATE @ONLY)
  
@@ -1097,19 +1102,3 @@ index 89b709e..a666882 100644
 +endif()
 +
  endif (UNIX AND NOT APPLE)
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 37d7f49..c8a6c94 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -161,6 +161,12 @@ if (${GPU_MODE} MATCHES "CPU_ONLY")
-   if ((UNIX OR WIN32) AND NOT APPLE)
-     OPTION(USE_MKL "Use MKL Intel Branch." ON)
-     find_package(MKL)
-+    
-+    if(MKL_FOUND)
-+      get_filename_component(MKL_PATH ${MKL_INCLUDE_DIR} DIRECTORY)
-+    endif()
-+
-+    message(STATUS "Found MKL: ${MKL_FOUND} / MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR} / MKL_PATH: ${MKL_PATH}")
-   endif ()
- endif ()
