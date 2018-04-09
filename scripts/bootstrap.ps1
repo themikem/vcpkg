@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [ValidateNotNullOrEmpty()][string]$disableMetrics = "0",
-    [Parameter(Mandatory=$False)][string]$withVSPath = ""
+    [Parameter(Mandatory=$False)][string]$withVSPath = "",
+    [Parameter(Mandatory=$False)][string]$toolsetVer = "0",
+	[Parameter(Mandatory=$False)][string]$defaultTriplet = "X86_WINDOWS"
 )
 Set-StrictMode -Version Latest
 $scriptsDir = split-path -parent $script:MyInvocation.MyCommand.Definition
@@ -47,9 +49,24 @@ $msbuildExe = $msbuildExeWithPlatformToolset[0]
 $platformToolset = $msbuildExeWithPlatformToolset[1]
 $windowsSDK = & $scriptsDir\getWindowsSDK.ps1
 
+$toolsetVerArg = ""
+if ($toolsetVer -ne 0)
+{
+	$toolsetVerArg = "`"/p:VCPKG_v141_TOOLSET_VERSION=$toolsetVer`""
+}
+
+$defaultTripletArg = ""
+if ($defaultTriplet)
+{
+	$defaultTripletArg = "`"/p:VCPKG_BASE_TRIPLET=$defaultTriplet`""
+}
+
+
 $arguments = (
 "`"/p:VCPKG_VERSION=-$gitHash`"",
 "`"/p:DISABLE_METRICS=$disableMetrics`"",
+$toolsetVerArg,
+$defaultTripletArg,
 "/p:Configuration=Release",
 "/p:Platform=x86",
 "/p:PlatformToolset=$platformToolset",
