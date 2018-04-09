@@ -1113,3 +1113,5 @@ index 37d7f49..c8a6c94 100644
 +    message(STATUS "Found MKL: ${MKL_FOUND} / MKL_INCLUDE_DIR: ${MKL_INCLUDE_DIR} / MKL_PATH: ${MKL_PATH}")
    endif ()
  endif ()
+
+ 
