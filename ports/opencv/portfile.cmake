@@ -332,8 +332,10 @@ vcpkg_configure_cmake(
         ${BUILD_WITH_CONTRIB_FLAG}
         -DOPENCV_OTHER_INSTALL_PATH=share/opencv
         # WITH
-        -DWITH_CUBLAS=OFF
         -DWITH_CUDA=${WITH_CUDA}
+        -DWITH_CUFFT=${WITH_CUDA}
+        -DWITH_CUBLAS=${WITH_CUDA}
+        -DWITH_NVCUVID=${WITH_CUDA}
         -DWITH_EIGEN=${WITH_EIGEN}
         -DWITH_FFMPEG=${WITH_FFMPEG}
         -DWITH_GDCM=${WITH_GDCM}
@@ -425,6 +427,7 @@ file(RENAME ${CURRENT_PACKAGES_DIR}/debug/share/opencv/OpenCVModules.cmake ${CUR
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/include)
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindOpenCV.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/opencv)
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/usage DESTINATION ${CURRENT_PACKAGES_DIR}/share/opencv)
 
 vcpkg_copy_pdbs()
