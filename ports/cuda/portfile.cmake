@@ -44,4 +44,10 @@ if (CUDA_VERSION_MAJOR LESS 9)
                         "\n    https://developer.nvidia.com/cuda-downloads\n")
 endif()
 
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindCUDA.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/make2cmake.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/parse_cubin.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/run_nvcc.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/select_compute_arch.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+
 SET(VCPKG_POLICY_EMPTY_PACKAGE enabled)
