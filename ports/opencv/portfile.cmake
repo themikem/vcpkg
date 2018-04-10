@@ -213,16 +213,17 @@ if("eigen" IN_LIST FEATURES)
   set(WITH_EIGEN ON)
 endif()
 
+set(WITH_OPENNI2 OFF)
+if("openni2" IN_LIST FEATURES)
+  set(WITH_OPENNI2 ON)
+  list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/openni2)
+set(WITH_OPENNI2 OFF)
+
 set(WITH_GSTREAMER OFF)
 if("gstreamer" IN_LIST FEATURES)
   set(ENV{GSTREAMER_DIR} "C:/gstreamer/1.0/x86_64")
   set(WITH_GSTREAMER ON)
 endif()
-
-if("openni2" IN_LIST FEATURES)
-  set(WITH_OPENNI2 ON)
-  list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/openni2)
-set(WITH_OPENNI2 OFF)
 
 set(BUILD_opencv_python3 OFF)
 if("python3" IN_LIST FEATURES)
