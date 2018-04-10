@@ -247,7 +247,6 @@ vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
     OPTIONS
         # Ungrouped Entries
-        "-DCURRENT_INSTALLED_DIR=${CURRENT_INSTALLED_DIR}"
         -DOpenCV_DISABLE_ARCH_PATH=ON
         # Do not build docs/examples
         -DBUILD_DOCS=OFF

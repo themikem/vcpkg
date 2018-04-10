@@ -2,6 +2,8 @@
 # Sets expected OpenNI2 environment variables from downloadable package to
 #   match VCPKG paths
 
+get_filename_component(CURRENT_INSTALLED_DIR "../../" BASE_DIR "${CMAKE_CURRENT_LIST_DIR}" ABSOLUTE)
+
 if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     # message(STATUS "FINDING OPENNI2 x64")
     if(CMAKE_BUILD_TYPE MATCHES DEBUG)
