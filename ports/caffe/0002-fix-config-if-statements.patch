@@ -1,0 +1,50 @@
+diff --git a/cmake/Templates/CaffeConfig.cmake.in b/cmake/Templates/CaffeConfig.cmake.in
+index 8602c38..c0a441c 100644
+--- a/cmake/Templates/CaffeConfig.cmake.in
++++ b/cmake/Templates/CaffeConfig.cmake.in
+@@ -19,7 +19,7 @@
+ 
+ # OpenCV dependency (optional)
+ 
+-if(@USE_OPENCV@)
++if(@USE_OPENCV@ AND ON)
+   if(NOT OpenCV_FOUND)
+     set(Caffe_OpenCV_CONFIG_PATH "@OpenCV_CONFIG_PATH@")
+     if(Caffe_OpenCV_CONFIG_PATH)
+@@ -38,29 +38,29 @@ if(@USE_OPENCV@)
+ endif()
+ 
+ # Handle other imported targets libraries
+-if(@PROTOBUF_IMPORTED@)
++if(@PROTOBUF_IMPORTED@ AND ON)
+   find_package(Protobuf REQUIRED NO_MODULE)
+ endif()
+ 
+-if(@GFLAGS_IMPORTED@)
++if(@GFLAGS_IMPORTED@ AND ON)
+   find_package(gflags REQUIRED NO_MODULE)
+ endif()
+ 
+-if(@GLOG_IMPORTED@)
++if(@GLOG_IMPORTED@ AND ON)
+   find_package(glog REQUIRED NO_MODULE)
+ endif()
+ 
+-if(@HDF5_IMPORTED@)
++if(@HDF5_IMPORTED@ AND ON)
+   find_package(HDF5 COMPONENTS C HL REQUIRED NO_MODULE)
+ endif()
+ 
+-if(@USE_LMDB@ AND @LMDB_IMPORTED@)
++if(@USE_LMDB@ AND @LMDB_IMPORTED@ AND ON)
+   find_package(LMDB REQUIRED NO_MODULE)
+ endif()
+ 
+-if(@USE_LEVELDB@ AND @LEVELDB_IMPORTED@)
++if(@USE_LEVELDB@ AND @LEVELDB_IMPORTED@ AND ON)
+   find_package(LevelDB REQUIRED NO_MODULE)
+-  if(@SNAPPY_IMPORTED@)
++  if(@SNAPPY_IMPORTED@  AND ON)
+     find_package(Snappy REQUIRED NO_MODULE)
+   endif()
+ endif()
