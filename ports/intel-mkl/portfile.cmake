@@ -6,6 +6,8 @@ set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
 
 set(MKL_REQUIRED_VERSION "20180000")
 
+set(ARCH_TYPE "intel64")
+
 set(ProgramFilesx86 "ProgramFiles(x86)")
 set(INTEL_ROOT $ENV{${ProgramFilesx86}}/IntelSWTools/compilers_and_libraries/windows)
 
@@ -31,5 +33,17 @@ if (MKL_VERSION LESS MKL_REQUIRED_VERSION)
                         "\n    https://registrationcenter.intel.com/en/products/download/3178/\n")
 endif()
 
+get_filename_component(ARCH_PATH "${INTEL_ROOT}/redist/${ARCH_TYPE}" REALPATH)
+
+file(GLOB MKL_DLL_FILES "${ARCH_PATH}/mkl/*.dll")
+file(GLOB MKL_COMP_DLL_FILES "${ARCH_PATH}/compiler/*.dll")
+
+message(STATUS "path - ${ARCH_PATH}/mkl - glob ${MKL_DLL_FILES}")
+
+file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/bin)
+file(INSTALL ${MKL_DLL_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
+file(INSTALL ${MKL_COMP_DLL_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
+
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindMKL.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindMKL.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
+file(INSTALL $ENV{${ProgramFilesx86}}/IntelSWTools/compilers_and_libraries/licensing/mkl/en/license.rtf DESTINATION ${CURRENT_PACKAGES_DIR}/share/intel-mkl)
