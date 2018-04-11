@@ -6,12 +6,18 @@ set(VCPKG_POLICY_EMPTY_PACKAGE enabled)
 
 set(MKL_REQUIRED_VERSION "20180000")
 
-set(ARCH_TYPE "intel64")
+if(VCPKG_TARGET_ARCHITECTURE MATCHES "x64")
+    set(ARCH_TYPE "intel64")
+elseif(VCPKG_TARGET_ARCHITECTURE MATCHES "x86")
+    set(ARCH_TYPE "ia86")
+else()
+    message(FATAL_ERROR "Only x64 and x86 supported by Intel MKL")
+endif()
 
 set(ProgramFilesx86 "ProgramFiles(x86)")
 set(INTEL_ROOT $ENV{${ProgramFilesx86}}/IntelSWTools/compilers_and_libraries/windows)
 
-find_path(MKL_ROOT include/mkl.h PATHS $ENV{MKLROOT} ${INTEL_ROOT}/mkl DOC "Folder contains MKL")
+find_path(MKL_ROOT include/mkl.h PATHS $ENV{MKLROOT} ${INTEL_ROOT}/mkl DOC "Folder containing MKL")
 
 if (MKL_ROOT STREQUAL "MKL_ROOT-NOTFOUND")
     message(FATAL_ERROR "Could not find MKL. Before continuing, please download and install MKL  (${MKL_REQUIRED_VERSION} or higher) from:"
@@ -40,6 +46,7 @@ file(GLOB MKL_COMP_DLL_FILES "${ARCH_PATH}/compiler/*.dll")
 
 message(STATUS "path - ${ARCH_PATH}/mkl - glob ${MKL_DLL_FILES}")
 
+# install redist DLLs to bin directory to fix MKL_INTEL_THREAD.DLL load error
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/bin)
 file(INSTALL ${MKL_DLL_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
 file(INSTALL ${MKL_COMP_DLL_FILES} DESTINATION ${CURRENT_PACKAGES_DIR}/bin)
