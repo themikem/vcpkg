@@ -1,0 +1,12 @@
+diff --git a/cmake/OpenCVFindLibsVideo.cmake b/cmake/OpenCVFindLibsVideo.cmake
+index d8f46e9..06ab187 100644
+--- a/cmake/OpenCVFindLibsVideo.cmake
++++ b/cmake/OpenCVFindLibsVideo.cmake
+@@ -198,6 +198,7 @@ endif(WITH_OPENNI)
+
+ ocv_clear_vars(HAVE_OPENNI2)
+ if(WITH_OPENNI2)
++  find_package(OPENNI2)
+   include("${OpenCV_SOURCE_DIR}/cmake/OpenCVFindOpenNI2.cmake")
+ endif(WITH_OPENNI2)
+
