@@ -1,0 +1,13 @@
+diff --git a/cmake/Dependencies.cmake b/cmake/Dependencies.cmake
+index d711e92..49dc152 100644
+--- a/cmake/Dependencies.cmake
++++ b/cmake/Dependencies.cmake
+@@ -94,7 +94,7 @@ if(USE_LEVELDB)
+ endif()
+ 
+ # ---[ Snappy
+-if(USE_LEVELDB AND NOT MSVC)
++if(USE_LEVELDB)
+   find_package(Snappy REQUIRED)
+   list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Snappy_INCLUDE_DIR})
+   list(APPEND Caffe_LINKER_LIBS PRIVATE ${Snappy_LIBRARIES})
