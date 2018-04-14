@@ -70,7 +70,7 @@ vcpkg_execute_required_process(
     LOGNAME "configure-${TARGET_TRIPLET}-dbg")
 message(STATUS "Configuring ${TARGET_TRIPLET}-dbg done")
 
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
     # Configure debug
     message(STATUS "Configuring ${TARGET_TRIPLET}-static-dbg")
     file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg)
@@ -122,7 +122,7 @@ vcpkg_execute_required_process(
     LOGNAME "build-${TARGET_TRIPLET}-dbg")
 message(STATUS "Package ${TARGET_TRIPLET}-dbg done")
 
-if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
     # Build debug
     message(STATUS "Package ${TARGET_TRIPLET}-static-dbg")
     vcpkg_execute_required_process(
