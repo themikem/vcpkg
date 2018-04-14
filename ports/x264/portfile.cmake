@@ -24,7 +24,11 @@ set(AUTOMAKE_DIR ${MSYS_ROOT}/usr/share/automake-1.15)
 set(CONFIGURE_OPTIONS "--host=i686-pc-mingw32 --enable-strip --disable-lavf --disable-swscale --disable-asm --disable-avs --disable-ffms --disable-gpac --disable-lsmash")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
+    set(CONFIGURE_OPTIONS_STATIC "${CONFIGURE_OPTIONS} --enable-static")
     set(CONFIGURE_OPTIONS "${CONFIGURE_OPTIONS} --enable-shared")
+
+    set(CONFIGURE_OPTIONS_STATIC_RELEASE "--prefix=${CURRENT_PACKAGES_DIR}/static")
+    set(CONFIGURE_OPTIONS_STATIC_DEBUG  "--enable-debug --prefix=${CURRENT_PACKAGES_DIR}/debug/static")
 else()
     set(CONFIGURE_OPTIONS "${CONFIGURE_OPTIONS} --enable-static")
 endif()
@@ -66,6 +70,38 @@ vcpkg_execute_required_process(
     LOGNAME "configure-${TARGET_TRIPLET}-dbg")
 message(STATUS "Configuring ${TARGET_TRIPLET}-dbg done")
 
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
+    # Configure debug
+    message(STATUS "Configuring ${TARGET_TRIPLET}-static-dbg")
+    file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg)
+    file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg)
+    set(ENV{CFLAGS} "${X264_RUNTIME}d -Od -Zi -RTC1")
+    set(ENV{CXXFLAGS} "${X264_RUNTIME}d -Od -Zi -RTC1")
+    set(ENV{LDFLAGS} "-DEBUG")
+    vcpkg_execute_required_process(
+        COMMAND ${BASH} --noprofile --norc -c 
+            "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS_STATIC} ${CONFIGURE_OPTIONS_STATIC_DEBUG}"
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg"
+        LOGNAME "configure-${TARGET_TRIPLET}-static-dbg")
+    message(STATUS "Configuring ${TARGET_TRIPLET}-static-dbg done")
+
+    # Configure release
+    message(STATUS "Configuring ${TARGET_TRIPLET}-static-rel")
+    file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel)
+    file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel)
+    set(ENV{CFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
+    set(ENV{CXXFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
+    set(ENV{LDFLAGS} "-DEBUG -INCREMENTAL:NO -OPT:REF -OPT:ICF")
+    vcpkg_execute_required_process(
+        COMMAND ${BASH} --noprofile --norc -c 
+            "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS} ${CONFIGURE_OPTIONS_STATIC_RELEASE}"
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel"
+        LOGNAME "configure-${TARGET_TRIPLET}-static-rel")
+    message(STATUS "Configuring ${TARGET_TRIPLET}-static-rel done")
+endif()
+    
+
+
 unset(ENV{CFLAGS})
 unset(ENV{CXXFLAGS})
 unset(ENV{LDFLAGS})
@@ -86,19 +122,46 @@ vcpkg_execute_required_process(
     LOGNAME "build-${TARGET_TRIPLET}-dbg")
 message(STATUS "Package ${TARGET_TRIPLET}-dbg done")
 
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
+    # Build debug
+    message(STATUS "Package ${TARGET_TRIPLET}-static-dbg")
+    vcpkg_execute_required_process(
+        COMMAND ${BASH} --noprofile --norc -c "make && make install"
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg"
+        LOGNAME "build-${TARGET_TRIPLET}-dbg")
+    message(STATUS "Package ${TARGET_TRIPLET}-static-dbg done")
+
+    # Build release
+    message(STATUS "Package ${TARGET_TRIPLET}-static-rel")
+    vcpkg_execute_required_process(
+        COMMAND ${BASH} --noprofile --norc -c "make && make install"
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel"
+        LOGNAME "build-${TARGET_TRIPLET}-static-rel")
+    message(STATUS "Package ${TARGET_TRIPLET}-rel done")
+endif()
+
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools/x264)
-file(RENAME ${CURRENT_PACKAGES_DIR}/bin/x264.exe ${CURRENT_PACKAGES_DIR}/tools/x264/x264.exe)
+file(COPY ${CURRENT_PACKAGES_DIR}/bin/x264.exe ${CURRENT_PACKAGES_DIR}/tools/x264/)
 
 file(REMOVE_RECURSE
     ${CURRENT_PACKAGES_DIR}/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig
+    ${CURRENT_PACKAGES_DIR}/static/lib/pkgconfig
+    ${CURRENT_PACKAGES_DIR}/debug/static/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/debug/bin/x264.exe
+    ${CURRENT_PACKAGES_DIR}/debug/static/bin/x264.exe
     ${CURRENT_PACKAGES_DIR}/debug/include
+    ${CURRENT_PACKAGES_DIR}/debug/static/include
 )
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     file(RENAME ${CURRENT_PACKAGES_DIR}/lib/libx264.dll.lib ${CURRENT_PACKAGES_DIR}/lib/libx264.lib)
     file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/libx264.dll.lib ${CURRENT_PACKAGES_DIR}/debug/lib/libx264.lib)
+
+    # force U_STATIC_IMPLEMENTATION macro
+    file(READ ${CURRENT_PACKAGES_DIR}/static/include/x264.h HEADER_CONTENTS)
+    string(REPLACE "defined(U_STATIC_IMPLEMENTATION)" "1" HEADER_CONTENTS "${HEADER_CONTENTS}")
+    file(WRITE ${CURRENT_PACKAGES_DIR}/static/include/x264.h "${HEADER_CONTENTS}")
 else()
     # force U_STATIC_IMPLEMENTATION macro
     file(READ ${CURRENT_PACKAGES_DIR}/include/x264.h HEADER_CONTENTS)
@@ -113,5 +176,6 @@ endif()
 
 vcpkg_copy_pdbs()
 
-file(COPY ${SOURCE_PATH}/COPYING DESTINATION ${CURRENT_PACKAGES_DIR}/share/x264)
-file(RENAME ${CURRENT_PACKAGES_DIR}/share/x264/COPYING ${CURRENT_PACKAGES_DIR}/share/x264/copyright)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindX264.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/x264)
+file(INSTALL ${SOURCE_PATH}/COPYING DESTINATION ${CURRENT_PACKAGES_DIR}/share/x264 RENAME copyright)
+
