@@ -28,7 +28,7 @@ Build-Depends: liblzma
 Description: lzma support in ffmpeg
 
 Feature: x264
-Build-Depends: x264, ffmpeg[gpl]
+Build-Depends: x264[staticlibs], ffmpeg[gpl]
 Description: x264 support in ffmpeg
 
 Feature: opencl
