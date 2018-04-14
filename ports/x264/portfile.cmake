@@ -94,7 +94,7 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
     set(ENV{LDFLAGS} "-DEBUG -INCREMENTAL:NO -OPT:REF -OPT:ICF")
     vcpkg_execute_required_process(
         COMMAND ${BASH} --noprofile --norc -c 
-            "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS} ${CONFIGURE_OPTIONS_STATIC_RELEASE}"
+            "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS_STATIC} ${CONFIGURE_OPTIONS_STATIC_RELEASE}"
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel"
         LOGNAME "configure-${TARGET_TRIPLET}-static-rel")
     message(STATUS "Configuring ${TARGET_TRIPLET}-static-rel done")
@@ -137,22 +137,31 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlib" IN_LIST FEATURES)
         COMMAND ${BASH} --noprofile --norc -c "make && make install"
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel"
         LOGNAME "build-${TARGET_TRIPLET}-static-rel")
-    message(STATUS "Package ${TARGET_TRIPLET}-rel done")
+    message(STATUS "Package ${TARGET_TRIPLET}-static-rel done")
+else()
+    file(COPY ${CURRENT_PACKAGES_DIR}/lib DESTINATION ${CURRENT_PACKAGES_DIR}/static)
+    file(COPY ${CURRENT_PACKAGES_DIR}/include DESTINATION ${CURRENT_PACKAGES_DIR}/static/include)
+    file(COPY ${CURRENT_PACKAGES_DIR}/debug/lib DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
+    file(COPY ${CURRENT_PACKAGES_DIR}/debug/include DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
 endif()
 
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools/x264)
-file(COPY ${CURRENT_PACKAGES_DIR}/bin/x264.exe ${CURRENT_PACKAGES_DIR}/tools/x264/)
+file(INSTALL ${CURRENT_PACKAGES_DIR}/bin/x264.exe DESTINATION ${CURRENT_PACKAGES_DIR}/tools/x264)
 
 file(REMOVE_RECURSE
+    ${CURRENT_PACKAGES_DIR}/bin/x264.exe
+    ${CURRENT_PACKAGES_DIR}/static/bin
     ${CURRENT_PACKAGES_DIR}/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/static/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/debug/static/lib/pkgconfig
     ${CURRENT_PACKAGES_DIR}/debug/bin/x264.exe
-    ${CURRENT_PACKAGES_DIR}/debug/static/bin/x264.exe
+    ${CURRENT_PACKAGES_DIR}/debug/static/bin
     ${CURRENT_PACKAGES_DIR}/debug/include
     ${CURRENT_PACKAGES_DIR}/debug/static/include
 )
+
+
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     file(RENAME ${CURRENT_PACKAGES_DIR}/lib/libx264.dll.lib ${CURRENT_PACKAGES_DIR}/lib/libx264.lib)
@@ -171,6 +180,8 @@ else()
     file(REMOVE_RECURSE
         ${CURRENT_PACKAGES_DIR}/bin
         ${CURRENT_PACKAGES_DIR}/debug/bin
+        ${CURRENT_PACKAGES_DIR}/static/bin
+        ${CURRENT_PACKAGES_DIR}/debug/static/bin
     )
 endif()
 
