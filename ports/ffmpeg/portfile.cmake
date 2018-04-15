@@ -30,14 +30,13 @@ else()
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES diffutils make)
 endif()
 set(BASH ${MSYS_ROOT}/usr/bin/bash.exe)
-set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/include;$ENV{INCLUDE}")
-set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/lib;$ENV{LIB}")
+
 
 set(_csc_PROJECT_PATH ffmpeg)
 
 file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 
-set(OPTIONS "--enable-asm --enable-yasm --disable-doc --target-os=win32 --enable-w32threads")
+set(OPTIONS "--enable-asm --enable-x86asm --disable-doc --target-os=win32 --enable-w32threads")
 set(OPTIONS "${OPTIONS} --enable-runtime-cpudetect")
 
 message(STATUS "VCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}")
@@ -197,6 +196,12 @@ else()
     set(OPTIONS_RELEASE "${OPTIONS_RELEASE} --extra-cflags=-MT --extra-cxxflags=-MT")
 endif()
 
+set(INCLUDE_ENV "$ENV{INCLUDE}")
+set(LIB_ENV "$ENV{LIB}")
+
+set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/include;${INCLUDE_ENV}")
+set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/debug/lib;${LIB_ENV}")
+
 message(STATUS "Building ${_csc_PROJECT_PATH} for Debug")
 message(STATUS "OPTIONS - ${OPTIONS}")
 message(STATUS "OPTIONS_DEBUG - ${OPTIONS_DEBUG}")
@@ -210,6 +215,9 @@ vcpkg_execute_required_process(
     WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-dbg
     LOGNAME build-${TARGET_TRIPLET}-dbg
 )
+
+
+set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/lib;${LIB_ENV}")
 
 message(STATUS "Building ${_csc_PROJECT_PATH} for Release")
 message(STATUS "OPTIONS - ${OPTIONS}")
@@ -229,6 +237,10 @@ vcpkg_execute_required_process(
 
 if("staticlibs" IN_LIST FEATURES)
     if(VCPKG_CRT_LINKAGE STREQUAL "dynamic")
+        set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/static/include;${CURRENT_INSTALLED_DIR}/include;${INCLUDE_ENV}")
+        set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/debug/static/lib;${CURRENT_INSTALLED_DIR}/debug/lib;${LIB_ENV}")
+        message(STATUS "INCLUDE: $ENV{INCLUDE}")
+        message(STATUS "LIB: $ENV{LIB}")
         message(STATUS "Building ${_csc_PROJECT_PATH} for Static Debug Libs")
         message(STATUS "OPTIONS_STATIC - ${OPTIONS_STATIC}")
         message(STATUS "OPTIONS_STATIC_DEBUG - ${OPTIONS_STATIC_DEBUG}")
@@ -243,6 +255,7 @@ if("staticlibs" IN_LIST FEATURES)
             LOGNAME build-${TARGET_TRIPLET}-static-dbg
         )
 
+        set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/static/lib;${CURRENT_INSTALLED_DIR}/lib;${LIB_ENV}")
         message(STATUS "Building ${_csc_PROJECT_PATH} for Static Release Libs")
         message(STATUS "OPTIONS_STATIC - ${OPTIONS_STATIC}")
         message(STATUS "OPTIONS_STATIC_RELEASE - ${OPTIONS_STATIC_RELEASE}")

@@ -1,6 +1,10 @@
 #!/usr/bin/bash
 set -e
 export PATH=/usr/bin:$PATH
+echo "PATH=$PATH"
+echo "INCLUDE=$INCLUDE"
+echo "LIB=$LIB"
+
 # Export HTTP(S)_PROXY as http(s)_proxy:
 if [ "$HTTP_PROXY" ]; then
     export http_proxy=$HTTP_PROXY
