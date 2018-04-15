@@ -22,3 +22,6 @@ Build-Depends: intel-mkl
 Feature: opencv
 Description: Build caffe with opencv
 Build-Depends: opencv
+
+Feature: python3
+Description: Build caffe with python3 support
