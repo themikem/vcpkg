@@ -18,14 +18,19 @@ vcpkg_apply_patches(
       "${CMAKE_CURRENT_LIST_DIR}/0001-protobuf-cmake-use-vcpkg.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0002-fix-config-if-statements.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0003-enable-snappy.patch"
+      "${CMAKE_CURRENT_LIST_DIR}/0004-debug-postfix-fix.patch"
 )
 
 #core Build-Depends
-list(INSERT CMAKE_MODULE_PATH 0 ${CURRENT_INSTALLED_DIR}/share/protobuf)
+list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/gflags)
+list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/glog)
+list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/hdf5)
+list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/protobuf)
+list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/openblas)
 
 if("cuda" IN_LIST FEATURES)
     set(CPU_ONLY OFF)
-    list(INSERT CMAKE_MODULE_PATH 0 ${CURRENT_INSTALLED_DIR}/share/cuda)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/cuda)
     # find_package(cuda REQUIRED)
 else()
     set(CPU_ONLY ON)
@@ -33,6 +38,7 @@ endif()
 
 if("mkl" IN_LIST FEATURES)
     set(BLAS MKL)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/intel-mkl)
 else()
     set(BLAS Open)
 endif()
@@ -47,25 +53,36 @@ endif()
 
 if("lmdb" IN_LIST FEATURES)
     set(USE_LMDB ON)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/lmdb)
 else()
     set(USE_LMDB OFF)
 endif()
 
 if("leveldb" IN_LIST FEATURES)
     set(USE_LEVELDB ON)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/leveldb)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/snappy)
 else()
     set(USE_LEVELDB OFF)
 endif()
 
+if("python3" IN_LIST FEATURES)
+    set(BUILD_python ON)
+else()
+    set(BUILD_python OFF)
+endif()
+
+string(REPLACE ";" "\\\\\;" CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
+
 vcpkg_configure_cmake(
-    SOURCE_PATH ${SOURCE_PATH}
     PREFER_NINJA
+    SOURCE_PATH ${SOURCE_PATH}
     OPTIONS
-    "-DCURRENT_INSTALLED_DIR=${CURRENT_INSTALLED_DIR}"
+    "-DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}"
     -DCOPY_PREREQUISITES=OFF
     -DINSTALL_PREREQUISITES=OFF
     # Set to ON to use python
-    -DBUILD_python=OFF
+    -DBUILD_python=${BUILD_python}
     -DBUILD_python_layer=OFF
     -Dpython_version=3.6
     -DBUILD_matlab=OFF
@@ -77,6 +94,7 @@ vcpkg_configure_cmake(
     -DUSE_OPENCV=${USE_OPENCV}
     -DUSE_LMDB=${USE_LMDB}
     -DUSE_NCCL=OFF
+    
 )
 
 vcpkg_install_cmake()
@@ -105,7 +123,7 @@ endforeach()
 
 file(READ ${CURRENT_PACKAGES_DIR}/debug/share/caffe/caffetargets-debug.cmake CAFFE_DEBUG_MODULE)
 string(REPLACE "\${_IMPORT_PREFIX}" "\${_IMPORT_PREFIX}/debug" CAFFE_DEBUG_MODULE "${CAFFE_DEBUG_MODULE}")
-file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/caffetargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
+file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/CaffeTargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
 file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCaffe.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/caffe)

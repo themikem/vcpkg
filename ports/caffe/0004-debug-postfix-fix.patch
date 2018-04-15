@@ -1,0 +1,26 @@
+diff --git a/cmake/ConfigGen.cmake b/cmake/ConfigGen.cmake
+index ee45c6f..4ef4ae0 100644
+--- a/cmake/ConfigGen.cmake
++++ b/cmake/ConfigGen.cmake
+@@ -18,7 +18,7 @@ endfunction()
+ # Usage:
+ #  caffe_generate_export_configs()
+ function(caffe_generate_export_configs)
+-  set(install_cmake_suffix "share/Caffe")
++  set(install_cmake_suffix "share/caffe")
+ 
+   if(NOT HAVE_CUDA)
+     set(HAVE_CUDA FALSE)
+diff --git a/cmake/Misc.cmake b/cmake/Misc.cmake
+index fcb2464..bdd5ada 100644
+--- a/cmake/Misc.cmake
++++ b/cmake/Misc.cmake
+@@ -45,7 +45,7 @@ if(UNIX OR APPLE)
+ endif()
+ 
+ # ---[ Set debug postfix
+-set(Caffe_DEBUG_POSTFIX "-d")
++set(Caffe_DEBUG_POSTFIX "d")
+ 
+ set(Caffe_POSTFIX "")
+ if(CMAKE_BUILD_TYPE MATCHES "Debug")
