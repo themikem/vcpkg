@@ -18,6 +18,7 @@ vcpkg_apply_patches(
       "${CMAKE_CURRENT_LIST_DIR}/0001-protobuf-cmake-use-vcpkg.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0002-fix-config-if-statements.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0003-enable-snappy.patch"
+      "${CMAKE_CURRENT_LIST_DIR}/0004-debug-postfix-fix.patch"
 )
 
 #core Build-Depends
@@ -122,7 +123,7 @@ endforeach()
 
 file(READ ${CURRENT_PACKAGES_DIR}/debug/share/caffe/caffetargets-debug.cmake CAFFE_DEBUG_MODULE)
 string(REPLACE "\${_IMPORT_PREFIX}" "\${_IMPORT_PREFIX}/debug" CAFFE_DEBUG_MODULE "${CAFFE_DEBUG_MODULE}")
-file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/caffetargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
+file(WRITE ${CURRENT_PACKAGES_DIR}/share/caffe/CaffeTargets-debug.cmake "${CAFFE_DEBUG_MODULE}")
 file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/debug/share)
 
 file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCaffe.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/caffe)
