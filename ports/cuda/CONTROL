@@ -1,3 +1,6 @@
 Source: cuda
-Version: 9.0
+Version: 9.0-1
 Description: A parallel computing platform and programming model
+
+Feature: cudnn
+Description: CuDNN support for CUDA - expects CuDNN install in CUDA directory
