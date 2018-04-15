@@ -24,7 +24,9 @@ vcpkg_from_github(
 
 vcpkg_apply_patches(
     SOURCE_PATH ${SOURCE_PATH}
-    PATCHES ${CMAKE_CURRENT_LIST_DIR}/windows-fixes.patch
+    PATCHES 
+        "${CMAKE_CURRENT_LIST_DIR}/windows-fixes.patch"
+        "${CMAKE_CURRENT_LIST_DIR}/cudnn-fix.patch"
 )
 
 # set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/openpose-1.2.1)
@@ -48,15 +50,18 @@ endif()
 
 if("cuda" IN_LIST FEATURES)
     set(GPU_MODE "CUDA")
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/cuda)
 else()
     set(GPU_MODE "CPU_ONLY")
 endif()
 
 if("mkl" IN_LIST FEATURES)
     set(USE_MKL ON)
+    list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/intel-mkl)
 else()
     if(GPU_MODE MATCHES "CPU_ONLY")
         set(USE_MKL ON)
+        list(APPEND CMAKE_MODULE_PATH ${CURRENT_INSTALLED_DIR}/share/intel-mkl)
     else()
         set(USE_MKL OFF)
     endif()
@@ -93,6 +98,7 @@ endif()
 #USE_MKL
 #USE_CUDNN
 
+string(REPLACE ";" "\\\\\;" CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
 
 vcpkg_configure_cmake(
     SOURCE_PATH ${SOURCE_PATH}
@@ -102,8 +108,7 @@ vcpkg_configure_cmake(
     # OPTIONS_DEBUG -DDEBUGGABLE=1
     OPTIONS
     -DBUILD_SHARED_LIBS=0
-    "-DCURRENT_INSTALLED_DIR=${CURRENT_INSTALLED_DIR}"
-    "-DCURRENT_PACKAGES_DIR=${CURRENT_PACKAGES_DIR}"
+    "-DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}"
     -DVCPKG_TARGET_ARCHITECTURE=${VCPKG_TARGET_ARCHITECTURE}
     -DGPU_MODE=${GPU_MODE}
     -DWITH_3D_RENDERER=${3D_RENDERER}

@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b773dd5..b74d26f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -234,6 +234,9 @@ if ((UNIX OR WIN32) AND NOT APPLE)
+   if (${GPU_MODE} MATCHES "CUDA")
+     # include(cmake/Cuda.cmake)
+     find_package(CuDNN REQUIRED)
++    if(CUDNN_FOUND)
++      set(HAVE_CUDNN 1)
++    endif()
+   endif ()
+ 
+   find_package(GFLAGS REQUIRED)
