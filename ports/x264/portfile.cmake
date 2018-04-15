@@ -27,14 +27,15 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     set(CONFIGURE_OPTIONS_STATIC "${CONFIGURE_OPTIONS} --enable-static")
     set(CONFIGURE_OPTIONS "${CONFIGURE_OPTIONS} --enable-shared")
 
-    set(CONFIGURE_OPTIONS_STATIC_RELEASE "--prefix=${CURRENT_PACKAGES_DIR}/static")
+
     set(CONFIGURE_OPTIONS_STATIC_DEBUG  "--enable-debug --prefix=${CURRENT_PACKAGES_DIR}/debug/static")
+    set(CONFIGURE_OPTIONS_STATIC_RELEASE "--prefix=${CURRENT_PACKAGES_DIR}/static")
 else()
     set(CONFIGURE_OPTIONS "${CONFIGURE_OPTIONS} --enable-static")
 endif()
 
-set(CONFIGURE_OPTIONS_RELEASE "--prefix=${CURRENT_PACKAGES_DIR}")
 set(CONFIGURE_OPTIONS_DEBUG  "--enable-debug --prefix=${CURRENT_PACKAGES_DIR}/debug")
+set(CONFIGURE_OPTIONS_RELEASE "--prefix=${CURRENT_PACKAGES_DIR}")
 
 if(VCPKG_CRT_LINKAGE STREQUAL "static")
     set(X264_RUNTIME "-MT")
@@ -48,7 +49,7 @@ file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rel)
 set(ENV{CFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
 set(ENV{CXXFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
-set(ENV{LDFLAGS} "-DEBUG -INCREMENTAL:NO -OPT:REF -OPT:ICF")
+set(ENV{LDFLAGS} "-INCREMENTAL:NO -OPT:REF -OPT:ICF")
 vcpkg_execute_required_process(
     COMMAND ${BASH} --noprofile --norc -c 
         "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS} ${CONFIGURE_OPTIONS_RELEASE}"
@@ -75,8 +76,8 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
     message(STATUS "Configuring ${TARGET_TRIPLET}-static-dbg")
     file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg)
     file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-dbg)
-    set(ENV{CFLAGS} "${X264_RUNTIME}d -Od -Zi -RTC1")
-    set(ENV{CXXFLAGS} "${X264_RUNTIME}d -Od -Zi -RTC1")
+    set(ENV{CFLAGS} "-MTd -Od -Zi -RTC1")
+    set(ENV{CXXFLAGS} "-MTd -Od -Zi -RTC1")
     set(ENV{LDFLAGS} "-DEBUG")
     vcpkg_execute_required_process(
         COMMAND ${BASH} --noprofile --norc -c 
@@ -89,9 +90,9 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
     message(STATUS "Configuring ${TARGET_TRIPLET}-static-rel")
     file(REMOVE_RECURSE ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel)
     file(MAKE_DIRECTORY ${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-static-rel)
-    set(ENV{CFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
-    set(ENV{CXXFLAGS} "${X264_RUNTIME} -O2 -Oi -Zi")
-    set(ENV{LDFLAGS} "-DEBUG -INCREMENTAL:NO -OPT:REF -OPT:ICF")
+    set(ENV{CFLAGS} "-MT -O2 -Oi -Zi")
+    set(ENV{CXXFLAGS} "-MT -O2 -Oi -Zi")
+    set(ENV{LDFLAGS} "-INCREMENTAL:NO -OPT:REF -OPT:ICF")
     vcpkg_execute_required_process(
         COMMAND ${BASH} --noprofile --norc -c 
             "CC=cl ${SOURCE_PATH}/configure ${CONFIGURE_OPTIONS_STATIC} ${CONFIGURE_OPTIONS_STATIC_RELEASE}"
@@ -105,6 +106,14 @@ endif()
 unset(ENV{CFLAGS})
 unset(ENV{CXXFLAGS})
 unset(ENV{LDFLAGS})
+
+
+include(ProcessorCount)
+ProcessorCount(N)
+if(NOT N EQUAL 0)
+  set(MAKE_J -j${N})
+#   set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${N})
+endif()
 
 # Build release
 message(STATUS "Package ${TARGET_TRIPLET}-rel")
