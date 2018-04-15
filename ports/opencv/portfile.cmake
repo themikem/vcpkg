@@ -19,6 +19,7 @@ vcpkg_apply_patches(
       "${CMAKE_CURRENT_LIST_DIR}/0004-use-find-package-required.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0005-remove-protobuf-target.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0006-ffmpeg-ext-lib.patch"
+      "${CMAKE_CURRENT_LIST_DIR}/0007-use-vcpkg-openni2.patch"
 )
 
 file(WRITE "${CURRENT_BUILDTREES_DIR}/src/opencv-${OPENCV_PORT_VERSION}/rework.stamp")
