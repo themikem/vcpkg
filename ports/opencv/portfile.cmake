@@ -17,7 +17,7 @@ vcpkg_apply_patches(
       "${CMAKE_CURRENT_LIST_DIR}/0002-install-options.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0003-disable-downloading.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0004-use-find-package-required.patch"
-      "${CMAKE_CURRENT_LIST_DIR}/0005-remove-protobuf-target.patch"
+      # "${CMAKE_CURRENT_LIST_DIR}/0005-remove-protobuf-target.patch"
       "${CMAKE_CURRENT_LIST_DIR}/0006-ffmpeg-ext-lib.patch"
 )
 
@@ -225,6 +225,11 @@ if(VCPKG_TARGET_ARCHITECTURE MATCHES "arm")
   set(BUILD_opencv_line_descriptor OFF)
   set(BUILD_opencv_saliency OFF)
   set(BUILD_opencv_bgsegm OFF)
+endif()
+
+if(WITH_FFMPEG)
+  set(ENV{INCLUDE} "${CURRENT_INSTALLED_DIR}/static/include;${CURRENT_INSTALLED_DIR}/include;$ENV{INCLUDE}")
+  set(ENV{LIB} "${CURRENT_INSTALLED_DIR}/static/lib;${CURRENT_INSTALLED_DIR}/lib;$ENV{LIB}")
 endif()
 
 string(REPLACE ";" "\\\\\;" CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
