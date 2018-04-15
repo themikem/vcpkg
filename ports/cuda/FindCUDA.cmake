@@ -76,6 +76,8 @@ set(CUDA_REQUIRED_VERSION "V9.0.0")
 set(CMAKE_FIND_LIBRARY_PREFIXES "")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
 
+get_filename_component(CURRENT_INSTALLED_DIR "../../" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+message(STATUS "Finding VCPKG CUDA in ${CMAKE_CURRENT_LIST_DIR}")
 
 # This macro helps us find the location of helper files we will need the full path to
 macro(CUDA_FIND_HELPER_FILE _name _extension)
@@ -470,13 +472,15 @@ set (CUDA_INCLUDE_DIRS ${CUDA_TOOLKIT_INCLUDE})
 
 # == cuda_find_library_local_first_with_path_ext ===============================
 macro(cuda_find_library_local_first_with_path_ext _var _names _doc _path_ext )
-  if(VCPKG_TARGET_ARCHITECTURE MATCHES "x64")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # CUDA 3.2+ on Windows moved the library directories, so we need the new
     # and old paths.
     set(_cuda_64bit_lib_dir "${_path_ext}lib/x64" "${_path_ext}lib64" "${_path_ext}libx64" )
   endif()
   # CUDA 3.2+ on Windows moved the library directories, so we need to new
   # (lib/Win32) and the old path (lib).
+
+  message(STATUS "Finding ${_var}: ${_names} in ${CUDA_TOOLKIT_TARGET_DIR};$ENV{CUDA_PATH};$ENV{CUDA_LIB_PATH} with suffixes: ${_cuda_64bit_lib_dir} \"${_path_ext}lib/Win32\" \"${_path_ext}lib\" \"${_path_ext}libWin32\"")
   find_library(${_var}
     NAMES ${_names}
     PATHS "${CUDA_TOOLKIT_TARGET_DIR}"
@@ -670,6 +674,12 @@ find_package_handle_standard_args(CUDA
   VERSION_VAR
     CUDA_VERSION
   )
+
+message(STATUS "Found CUDA: ${CUDA_VERSION}")
+message(STATUS "  Toolkit Root: ${CUDA_TOOLKIT_ROOT_DIR}")
+message(STATUS "  CUDA RT: ${CUDA_CUDART_LIBRARY_VAR}")
+message(STATUS "  NVCC: ${CUDA_NVCC_EXECUTABLE}")
+message(STATUS "  CUBLAS: ${CUDA_cublas_LIBRARY}")
 
 
 

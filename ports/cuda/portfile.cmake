@@ -44,10 +44,30 @@ if (CUDA_VERSION_MAJOR LESS 9)
                         "\n    https://developer.nvidia.com/cuda-downloads\n")
 endif()
 
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindCUDA.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/make2cmake.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/parse_cubin.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/run_nvcc.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/select_compute_arch.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCUDA.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/make2cmake.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/parse_cubin.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/run_nvcc.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/select_compute_arch.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
+
+
+if("cudnn" IN_LIST FEATURES)
+    find_library(CUDNN_LIBRARY
+        cudnn
+        PATHS
+        ENV CUDA_PATH
+        ENV CUDA_BIN_PATH
+        PATH_SUFFIXES lib/x64 lib/Win32
+        DOC "CuDNN library location"
+        NO_DEFAULT_PATH
+        )
+
+    if(CUDNN_LIBRARY)
+        file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCuDNN.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
+    else()
+        message(FATAL_ERROR "CuDNN requested but library not found!  Please install to CUDA_PATH and try again!")
+    endif()
+endif()
+
 
 SET(VCPKG_POLICY_EMPTY_PACKAGE enabled)
