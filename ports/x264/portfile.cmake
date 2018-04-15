@@ -100,20 +100,10 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
         LOGNAME "configure-${TARGET_TRIPLET}-static-rel")
     message(STATUS "Configuring ${TARGET_TRIPLET}-static-rel done")
 endif()
-    
-
 
 unset(ENV{CFLAGS})
 unset(ENV{CXXFLAGS})
 unset(ENV{LDFLAGS})
-
-
-include(ProcessorCount)
-ProcessorCount(N)
-if(NOT N EQUAL 0)
-  set(MAKE_J -j${N})
-#   set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${N})
-endif()
 
 # Build release
 message(STATUS "Package ${TARGET_TRIPLET}-rel")
@@ -148,10 +138,10 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic" AND "staticlibs" IN_LIST FEATURES)
         LOGNAME "build-${TARGET_TRIPLET}-static-rel")
     message(STATUS "Package ${TARGET_TRIPLET}-static-rel done")
 else()
-    file(COPY ${CURRENT_PACKAGES_DIR}/lib DESTINATION ${CURRENT_PACKAGES_DIR}/static)
-    file(COPY ${CURRENT_PACKAGES_DIR}/include DESTINATION ${CURRENT_PACKAGES_DIR}/static/include)
-    file(COPY ${CURRENT_PACKAGES_DIR}/debug/lib DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
-    file(COPY ${CURRENT_PACKAGES_DIR}/debug/include DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
+    file(INSTALL ${CURRENT_PACKAGES_DIR}/lib DESTINATION ${CURRENT_PACKAGES_DIR}/static)
+    file(INSTALL ${CURRENT_PACKAGES_DIR}/include DESTINATION ${CURRENT_PACKAGES_DIR}/static/include)
+    file(INSTALL ${CURRENT_PACKAGES_DIR}/debug/lib DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
+    file(INSTALL ${CURRENT_PACKAGES_DIR}/debug/include DESTINATION ${CURRENT_PACKAGES_DIR}/debug/static)
 endif()
 
 file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/tools/x264)
@@ -170,8 +160,6 @@ file(REMOVE_RECURSE
     ${CURRENT_PACKAGES_DIR}/debug/static/include
 )
 
-
-
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "dynamic")
     file(RENAME ${CURRENT_PACKAGES_DIR}/lib/libx264.dll.lib ${CURRENT_PACKAGES_DIR}/lib/libx264.lib)
     file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/libx264.dll.lib ${CURRENT_PACKAGES_DIR}/debug/lib/libx264.lib)
@@ -185,6 +173,7 @@ else()
     file(READ ${CURRENT_PACKAGES_DIR}/include/x264.h HEADER_CONTENTS)
     string(REPLACE "defined(U_STATIC_IMPLEMENTATION)" "1" HEADER_CONTENTS "${HEADER_CONTENTS}")
     file(WRITE ${CURRENT_PACKAGES_DIR}/include/x264.h "${HEADER_CONTENTS}")
+    file(INSTALL ${CURRENT_PACKAGES_DIR}/include/x264.h DESTINATION ${CURRENT_PACKAGES_DIR}/include)
 
     file(REMOVE_RECURSE
         ${CURRENT_PACKAGES_DIR}/bin
