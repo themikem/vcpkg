@@ -14,6 +14,7 @@ include(CheckTypeSize)
 find_package(LIBLZMA REQUIRED)
 if(LIBLZMA_FOUND)
   message(STATUS "LIBLZMA_FOUND - ${LIBLZMA_FOUND}")
+  ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${LIBLZMA_LIBRARIES})
 else()
   message(STATUS "LIBLZMA NOT FOUND")
 endif()
@@ -25,7 +26,9 @@ target_include_directories(${FFOPENCV_LIB} PUBLIC "${OpenCV_SOURCE_DIR}/modules/
 set_target_properties(${FFOPENCV_LIB} PROPERTIES DEFINE_SYMBOL FFOPENCV_DLL)
 ocv_include_directories(${OpenCV_INCLUDE_DIRS})
 ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${FFMPEG_STATIC_LIBRARIES})
-ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${LIBLZMA_LIBRARIES})
+if(X264_FOUND)
+  ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${X264_STATIC_LIBRARIES})
+endif()
 
 set_target_properties(${FFOPENCV_LIB} PROPERTIES
   OUTPUT_NAME ${FFOPENCV_OUTPUT_NAME}
