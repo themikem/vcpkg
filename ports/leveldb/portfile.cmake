@@ -29,5 +29,7 @@ vcpkg_configure_cmake(
 
 vcpkg_install_cmake()
 
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindLeveldb.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/leveldb)
+
 # Handle copyright
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/leveldb RENAME copyright)
