@@ -50,17 +50,21 @@ file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/parse_cubin.cmake DESTINATION ${CURRENT_P
 file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/run_nvcc.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
 file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/select_compute_arch.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda/FindCUDA)
 
+set(CMAKE_FIND_LIBRARY_PREFIXES "")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
 
 if("cudnn" IN_LIST FEATURES)
     find_library(CUDNN_LIBRARY
         cudnn
         PATHS
         ENV CUDA_PATH
-        ENV CUDA_BIN_PATH
-        PATH_SUFFIXES lib/x64 lib/Win32
+        ENV CUDA_LIB_PATH
+        PATH_SUFFIXES lib/x64/
         DOC "CuDNN library location"
         NO_DEFAULT_PATH
         )
+
+    message(STATUS "CUDA_PATH: ${CUDA_PATH} / NVCC: ${NVCC}")
 
     if(CUDNN_LIBRARY)
         file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindCuDNN.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/cuda)
