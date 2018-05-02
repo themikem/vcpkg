@@ -36,11 +36,15 @@ if(NOT CAFFE_FOUND)
     
     find_package_handle_standard_args(CAFFE DEFAULT_MSG CAFFE_LIBRARY CAFFE_INCLUDE_DIR)
     if(CAFFE_FOUND)
+        set(Caffe_FOUND true)
         set(CAFFE_LIBRARIES ${CAFFE_LIBRARY})
+        set(Caffe_LIBRARIES ${CAFFE_LIBRARY})
         set(CAFFE_INCLUDE_DIRS ${CAFFE_INCLUDE_DIRS})
+        set(Caffe_INCLUDE_DIRS ${CAFFE_INCLUDE_DIRS})
         set(CAFFE_LIBS ${CAFFE_LIBRARY})
         set(Caffe_LIBS ${CAFFE_LIBRARY})
-        mark_as_advanced(CAFFE_FOUND CAFFE_LIBRARY CAFFE_INCLUDE_DIR CAFFE_LIBRARIES CAFFE_INCLUDE_DIRS)
+        mark_as_advanced(CAFFE_FOUND CAFFE_LIBRARY CAFFE_INCLUDE_DIR CAFFE_LIBRARIES CAFFE_INCLUDE_DIRS CAFFE_LIBS)
+        mark_as_advanced(Caffe_FOUND Caffe_LIBRARY Caffe_INCLUDE_DIR Caffe_LIBRARIES Caffe_INCLUDE_DIRS Caffe_LIBS)
 
         message(STATUS "Configuring Caffe Targets")
 
