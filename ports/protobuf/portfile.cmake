@@ -115,7 +115,7 @@ if(VCPKG_LIBRARY_LINKAGE STREQUAL dynamic)
     file(WRITE ${CURRENT_PACKAGES_DIR}/include/google/protobuf/stubs/platform_macros.h "${_contents}")
 endif()
 
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/FindProtobuf.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/protobuf)
+file(INSTALL ${CMAKE_CURRENT_LIST_DIR}/FindProtobuf.cmake DESTINATION ${CURRENT_PACKAGES_DIR}/share/protobuf)
 file(INSTALL ${SOURCE_PATH}/LICENSE DESTINATION ${CURRENT_PACKAGES_DIR}/share/protobuf RENAME copyright)
 if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     file(INSTALL ${TOOL_PATH}/bin/protoc.exe DESTINATION ${CURRENT_PACKAGES_DIR}/tools)
