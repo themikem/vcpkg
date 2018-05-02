@@ -136,3 +136,8 @@ endmacro()
 foreach(FFMPEG_LIBNAME ${FFMPEG_LIB_NAMES})
   get_ffmpeg_lib_version("FFMPEG_lib${FFMPEG_LIBNAME}_VERSION"  "${FFMPEG_LIBNAME}")
 endforeach()
+
+get_filename_component(X264_DIR "${CMAKE_CURRENT_LIST_DIR}/../x264" ABSOLUTE)
+list(APPEND CMAKE_MODULE_PATH "${X264_DIR}")
+find_package(X264)
+message(STATUS "FFMPEG Finding X264 - ${X264_FOUND}")
