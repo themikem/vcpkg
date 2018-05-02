@@ -10,6 +10,8 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CheckTypeSize)
 
+add_library(${FFOPENCV_LIB} SHARED "ffopencv.cpp")
+
 # lzma required for TIFF support
 find_package(LIBLZMA REQUIRED)
 if(LIBLZMA_FOUND)
@@ -19,15 +21,19 @@ else()
   message(STATUS "LIBLZMA NOT FOUND")
 endif()
 
-add_library(${FFOPENCV_LIB} SHARED "ffopencv.cpp")
-
 target_include_directories(${FFOPENCV_LIB} PUBLIC "${OpenCV_SOURCE_DIR}/modules/videoio/src" "${OpenCV_SOURCE_DIR}/include" ${FFMPEG_INCLUDE_DIRS} )
 
 set_target_properties(${FFOPENCV_LIB} PROPERTIES DEFINE_SYMBOL FFOPENCV_DLL)
 ocv_include_directories(${OpenCV_INCLUDE_DIRS})
 ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${FFMPEG_STATIC_LIBRARIES})
+message(STATUS "X264 - ${X264_FOUND}")
 if(X264_FOUND)
   ocv_target_link_libraries(${FFOPENCV_LIB} LINK_PRIVATE ${X264_STATIC_LIBRARIES})
+  add_library(x264 STATIC IMPORTED)
+  set_target_properties(x264 PROPERTIES
+  IMPORTED_LOCATION "${X264_STATIC_LIBRARY}"
+  INTERFACE_INCLUDE_DIRECTORIES "${X264_INCLUDE_DIR}"
+  )
 endif()
 
 set_target_properties(${FFOPENCV_LIB} PROPERTIES
