@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <tools version="1">
     <tool name="cmake">
-        <requiredVersion>3.11.0</requiredVersion>
-        <exeRelativePath>cmake-3.11.0-win32-x86\bin\cmake.exe</exeRelativePath>
-        <url>https://cmake.org/files/v3.11/cmake-3.11.0-win32-x86.zip</url>
-        <sha256>c473db9e18c1f27024820df917aa2d9d460f69d4cb0305fbf5da7f96ce99754c</sha256>
-        <archiveRelativePath>cmake-3.11.0-win32-x86.zip</archiveRelativePath>
+        <requiredVersion>3.11.1</requiredVersion>
+        <exeRelativePath>cmake-3.11.1-win32-x86\bin\cmake.exe</exeRelativePath>
+        <url>https://cmake.org/files/v3.11/cmake-3.11.1-win32-x86.zip</url>
+        <sha256>415a24c0c1250514747ea3c1d45b1930bc51dc5d6acb01062e1d680051bb0ea9</sha256>
+        <archiveRelativePath>cmake-3.11.1-win32-x86.zip</archiveRelativePath>
     </tool>
     <tool name="git">
         <requiredVersion>2.17.0</requiredVersion>
