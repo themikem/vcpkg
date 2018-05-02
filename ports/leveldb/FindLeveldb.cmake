@@ -6,26 +6,29 @@ message(STATUS "Finding VCPKG LevelDB in ${CURRENT_INSTALLED_DIR}")
 set(LEVELDB_DIR ${CURRENT_INSTALLED_DIR}/share/leveldb)
 
 find_path(LEVELDB_INCLUDE_DIR
-    NAMES 
+    NAMES
         leveldb/db.h
     HINTS 
         "${CURRENT_INSTALLED_DIR}/include" 
-    NO_DEFAULT_PATH)
+    NO_DEFAULT_PATH
+)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     find_library(LEVELDB_LIBRARY
-        NAMES 
-            libleveldb
+        NAMES
+            leveldb
         HINTS
             "${CURRENT_INSTALLED_DIR}/lib"
-        NO_DEFAULT_PATH)
+        NO_DEFAULT_PATH
+    )
 else()
     find_library(LEVELDB_LIBRARY
-    NAMES 
-        libleveldb
-    HINTS
-        "${CURRENT_INSTALLED_DIR}/debug/lib"
-    NO_DEFAULT_PATH)
+        NAMES
+            leveldb
+        HINTS
+            "${CURRENT_INSTALLED_DIR}/debug/lib"
+        NO_DEFAULT_PATH
+    )
 endif()
 
 find_package_handle_standard_args(LEVELDB DEFAULT_MSG LEVELDB_LIBRARY LEVELDB_INCLUDE_DIR)
