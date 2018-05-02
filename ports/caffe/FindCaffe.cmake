@@ -34,7 +34,7 @@ if(NOT CAFFE_FOUND)
     endif()
     
     
-    find_package_handle_standard_args(SNAPPY DEFAULT_MSG SNAPPY_LIBRARY SNAPPY_INCLUDE_DIR)
+    find_package_handle_standard_args(CAFFE DEFAULT_MSG CAFFE_LIBRARY CAFFE_INCLUDE_DIR)
     if(CAFFE_FOUND)
         set(CAFFE_LIBRARIES ${CAFFE_LIBRARY})
         set(CAFFE_INCLUDE_DIRS ${CAFFE_INCLUDE_DIRS})
